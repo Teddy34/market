@@ -8,20 +8,41 @@ var options = {
   'Accept-Encoding': 'gzip'
 };
 
-var fetchUrl = function(url) {
+var fetchElement = function(element) {
+  var url = null;
+  if (_.isObject(element) && element.href) {
+    url = element.href;
+  }
+  else if (_.isString(element)) {
+    url = element;
+  }
+  if (!url) {
+    throw new Error("Wrong element to fetch:"+element.toSring());
+  }
+  console.log("fetching ", url);
   return fetch(url, options)
   .then(toJSON);
-  //.then(loadPages);
 };
 
 function toJSON(response) {
+  console.log("fetched with response", response.status);
   return response.json();
 }
 
-function loadPages(queryResult) {
-  if (queryResult.next) {
+function getItems(queryResult) {
+  var items = queryResult.items;
+
+  var concatItems = function(newQueryResult) {
+    newQueryResult.items = newQueryResult.items.concat(items);
+    return newQueryResult;
+  }
+
+  if (items && queryResult.next) {
     // fetch next page instead and agregate;
-    return queryResult.items;
+    return fetchElement(queryResult.next)
+      .then(concatItems)
+      .then(getItems);
+
   }
   return queryResult.items;
 }
@@ -42,11 +63,8 @@ function getRefUrl (item) {
   return item.href;
 }
 
-function getItems(result) {
-  if (!result || !result.items) {
-   throw new Error("getItems: wrong result");
- }
- return result.items;
+function containsId(strToSearch, strKeyword, strID) {
+  return new RegExp(strKeyword+'/'+strID+'/').exec(strToSearch);
 }
 
 var findByProp = function( list, strProp, strPropValue) {
@@ -65,6 +83,12 @@ var findByNamePartial = function(strName) {
   };
 };
 
+var findByNamePartial = function(strName) {
+  return function(list) {
+    return findByName(list, strName);
+  };
+};
+
 var getRegions = function(listObject) {
   return listObject.regions;
 };
@@ -73,28 +97,91 @@ var getItemTypes = function(listObject) {
   return listObject.itemTypes;
 }
 
+var getEntryPoint = function(strCrestEntryPointUrl) {
+  return Promise.resolve(crestEntryPointUrl)
+  .then(fetchElement);
+}
+
 var getMarketSellOrders = function(region) {
-  return Promise.resolve(region.marketSellOrders);
+  return region.marketSellOrders;
 };
 
 var fetchRegionMarketUrl = function(strRegionName) {
   return Promise.resolve(crestEntryPointUrl)
-  .then(fetchUrl)
+  .then(getEntryPoint)
   .then(getRegions)
-  .then(getRefUrl)
-  .then(fetchUrl)
+  .then(fetchElement)
   .then(getItems)
   .then(findByNamePartial(strRegionName))
+  .then(fetchElement)
+  .then(getMarketSellOrders) 
+  .catch(logError);
+};
+
+//throttled 1 hour
+var fetchItems = _.throttle(function() {
+    return Promise.resolve(crestEntryPointUrl)
+  .then(getEntryPoint)
+  .then(getItemTypes)
+  .then(fetchElement)
+  .then(getItems);
+},60*60*1000);
+
+var fetchItemTypeUrl = function(itemNumber) {
+
+  var find = function(itemList) {
+    return _.find(itemList, function(item) {
+      return containsId(item.href,'types',itemNumber);
+    });
+  }
+
+  return Promise.resolve()
+  .then(fetchItems)
+  .then(find)
   .then(getRefUrl)
-  .then(fetchUrl)
-  .then(getMarketSellOrders)
-  .then(getRefUrl);
+  .then(logger)
+  .catch(logError);
 };
 
-var fetchItemSellOrders = function(itemNumber) {
+var fetchMarketSellByRegionAndType = function(region, type) {
+  var itemTypeURL;
+  var storeTypeURL = function storeTypeURL (url) {
+    console.log('store in closire:',url);
+    itemTypeURL = url;
+  }
 
-};
+  var addParameterToRegionMarketURL = function (marketURL) {
+    console.log('addParameterToRegionMarketURL',marketURL,itemTypeURL);
+    return marketURL+'?type='+itemTypeURL;
+  }
 
-fetchRegionMarketUrl('The Forge')
+  var fetchRegionMarketUrlPartial = function() {
+    return fetchRegionMarketUrl(region).then(getRefUrl);
+  }
+
+  var logElement = function(elementList) {
+    console.log(elementList.items[0]);
+  }
+
+  Promise.resolve(type)
+  .then(fetchItemTypeUrl)
+  .then(storeTypeURL)
+  .then(fetchRegionMarketUrlPartial)
+  .then(logger)
+  .then(addParameterToRegionMarketURL)
+  .then(fetchElement)
+  .then(logElement)
+  .catch(logError)
+}
+
+/*fetchRegionMarketUrl('The Forge')
 .then(logger)
-.catch(logError);
+.catch(logError);*/
+
+//fetchItemTypeUrl(2195);
+//fetchItemTypeUrl(2195);
+//fetchItemTypeUrl(2196);
+//console.log(!!containsId('htttred:types/122345/','types','1223455'));
+
+fetchMarketSellByRegionAndType('The Forge', 2195)
+
