@@ -93,6 +93,14 @@ var getRegions = function(listObject) {
   return listObject.regions;
 };
 
+var getConstellations = function(region) {
+  return region.constellations;
+}
+
+var getSystems = function(constellations) {
+  return constellations.systems;
+}
+
 var getItemTypes = function(listObject) {
   return listObject.itemTypes;
 }
@@ -106,6 +114,17 @@ var getMarketSellOrders = function(region) {
   return region.marketSellOrders;
 };
 
+// functions to fetch useful data using tools seen on top
+
+//throttled 1 hour
+var fetchItems = _.throttle(function() {
+    return Promise.resolve(crestEntryPointUrl)
+  .then(getEntryPoint)
+  .then(getItemTypes)
+  .then(fetchElement)
+  .then(getItems);
+},60*60*1000);
+
 var fetchRegionMarketUrl = function(strRegionName) {
   return Promise.resolve(crestEntryPointUrl)
   .then(getEntryPoint)
@@ -117,15 +136,6 @@ var fetchRegionMarketUrl = function(strRegionName) {
   .then(getMarketSellOrders) 
   .catch(logError);
 };
-
-//throttled 1 hour
-var fetchItems = _.throttle(function() {
-    return Promise.resolve(crestEntryPointUrl)
-  .then(getEntryPoint)
-  .then(getItemTypes)
-  .then(fetchElement)
-  .then(getItems);
-},60*60*1000);
 
 var fetchItemTypeUrl = function(itemNumber) {
 
@@ -143,15 +153,110 @@ var fetchItemTypeUrl = function(itemNumber) {
   .catch(logError);
 };
 
+var searchSystemInSystemList = function(name, systemList) {
+  var firstSystem = systemList.shift();
+
+  if (!firstSystem) {return Promise.reject("not found");}
+
+  var findSystemOrIterate = function(system) {
+    if (system.name === name) {
+      return system;
+    }
+    return searchSystemInSystemList(name, systemList);
+  };
+
+  return Promise.resolve(firstSystem)
+  .then(fetchElement)
+  .then(findSystemOrIterate);
+};
+
+var searchSytemInConstellation = function(name, constellation) {
+
+  var partialSearch = function(systems) {
+    return searchSystemInSystemList(name, systems);
+  };
+
+  return Promise.resolve(constellation)
+  .then(getSystems)
+  .then(partialSearch);
+};
+
+var searchSystemInConstellationsList = function(name, constellationList) {
+  var firstConstellation = constellationList.shift();
+
+  if (!firstConstellation) {return Promise.reject("not found");}
+
+  var partialSearchInConstellation = function(constellation) {
+    return searchSytemInConstellation(name, constellation);
+  }
+
+  var partialSearchInConstellationList = function(err) {
+    if (err === "not found") {
+      return searchSystemInConstellationsList(name, constellationList);
+    }
+    return Promise.reject(err);
+  }
+
+  var findSystemOrIterate = function(constellation) {
+    return Promise.resolve(constellation)
+      .then(partialSearchInConstellation)
+      .catch(partialSearchInConstellationList);
+  };
+
+  return Promise.resolve(firstConstellation)
+  .then(fetchElement)
+  .then(findSystemOrIterate);
+};
+
+
+var searchSystemInRegionList = function(name, regionList) {
+  var firstRegion= regionList.shift();
+
+  if (!firstRegion) {return Promise.reject("not found");}
+
+  var partialSearchInConstellationsList = function(region) {
+    return searchSystemInConstellationsList(name, region.constellations);
+  }
+
+  var partialSearchInRegions = function(err) {
+    if (err === "not found") {
+      return searchSystemInRegionList(name, regionList);
+    }
+    return Promise.reject(err);
+  }
+
+  var findSystemOrIterate = function(region) {
+    return Promise.resolve(region)
+      .then(partialSearchInConstellationsList)
+      .catch(partialSearchInRegions);
+  };
+
+  return Promise.resolve(firstRegion)
+  .then(fetchElement)
+  .then(findSystemOrIterate);
+};
+
+var fetchSystemUrlByName = function(name) {
+
+  var partialSearchInRegionList = function(regionList) {
+    return searchSystemInRegionList(name, regionList)
+  }
+ 
+  return Promise.resolve(crestEntryPointUrl)
+  .then(getEntryPoint)
+  .then(getRegions)
+  .then(fetchElement)
+  .then(getItems)
+  .then(partialSearchInRegionList);
+};
+
 var fetchMarketSellByRegionAndType = function(region, type) {
   var itemTypeURL;
   var storeTypeURL = function storeTypeURL (url) {
-    console.log('store in closire:',url);
     itemTypeURL = url;
   }
 
   var addParameterToRegionMarketURL = function (marketURL) {
-    console.log('addParameterToRegionMarketURL',marketURL,itemTypeURL);
     return marketURL+'?type='+itemTypeURL;
   }
 
@@ -173,7 +278,6 @@ var fetchMarketSellByRegionAndType = function(region, type) {
   .then(logElement)
   .catch(logError)
 }
-
 /*fetchRegionMarketUrl('The Forge')
 .then(logger)
 .catch(logError);*/
@@ -183,5 +287,106 @@ var fetchMarketSellByRegionAndType = function(region, type) {
 //fetchItemTypeUrl(2196);
 //console.log(!!containsId('htttred:types/122345/','types','1223455'));
 
-fetchMarketSellByRegionAndType('The Forge', 2195)
+var logElement = function(elementList) {
+  console.log(elementList.items[0]);
+}
+//fetchMarketSellByRegionAndType('The Forge', 2195).then(logElement)
 
+var testConstellation = {
+  "position": {
+    "y": 64999452632293260,
+    "x": -134996400468185440,
+    "z": 103325617317521340
+  },
+  "region": {
+    "href": "https://public-crest.eveonline.com/regions/10000002/"
+  },
+  "systems": [
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000139/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000140/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000141/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000142/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000143/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000144/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/solarsystems/30000145/"
+    }
+  ],
+  "name": "Kimotoro"
+};
+
+/*searchSytemInConstellation("Jita", testConstellation)
+.then(logger)
+.catch(logError)*/
+
+var testRegion = {
+  "description": "\"The greater the State becomes, the greater humanity under it flourishes.\"",
+  "marketBuyOrders": {
+    "href": "https://public-crest.eveonline.com/market/10000002/orders/buy/"
+  },
+  "name": "The Forge",
+  "constellations": [
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000017/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000018/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000019/"
+    },
+    /*{
+      "href": "https://public-crest.eveonline.com/constellations/20000020/"
+    },*/
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000021/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000022/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000023/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000024/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000025/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000026/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000027/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000028/"
+    },
+    {
+      "href": "https://public-crest.eveonline.com/constellations/20000029/"
+    }
+  ],
+  "marketSellOrders": {
+    "href": "https://public-crest.eveonline.com/market/10000002/orders/sell/"
+  }
+};
+
+/*searchSystemInConstellationsList('Jita', testRegion.constellations)
+.then(logger)
+.catch(logError)*/
+
+fetchSystemUrlByName('Jita')
+.then(logger)
+.catch(logError);
