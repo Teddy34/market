@@ -316,12 +316,18 @@ searchSytemInConstellation("Jita", testConstellation)
 .then(logger)
 .catch(logError);*/
 
-var testRegion = require('./dummyObjects').region;
+/*var testRegion = require('./dummyObjects').region;
 
 searchSystemInConstellationsList('Jita', testRegion.constellations)
 .then(logger)
-.catch(logError)
+.catch(logError)*/
 
 /*fetchSystemUrlByName('Jita')
 .then(logger)
 .catch(logError);*/
+
+require('./io/eveSDE').connect(require('./databaseCredentials'));
+
+require('./io/eveSDE').getLocationsFromSystemName('Fliet')
+.then(logger)
+.catch(logError);
