@@ -14,8 +14,13 @@ var getLocationsFromSystemID = function(systemID) {
 };
 
 var getLocationsFromSystemName = function(systemName) {
-  return dbConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName", t."stationID", s."constellationID", s."regionID" FROM "staStations" AS "t" INNER JOIN "mapSolarSystems" s ON s."solarSystemID"=t."solarSystemID" WHERE "solarSystemName" = \''+systemName+'\'');
+  return dbConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName", t."stationID", s."constellationID", s."regionID" FROM "staStations" AS "t" INNER JOIN "mapSolarSystems" s ON s."solarSystemID"=t."solarSystemID" WHERE "solarSystemName" = \''+systemName+'\'')
+  .then(getRows);
 };
+
+function getRows(result) {
+	return result.rows;
+}
 
 module.exports = {
   connect: connect,

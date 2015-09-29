@@ -291,7 +291,6 @@ var fetchMarketSellByRegionAndType = function(region, type) {
   .then(logger)
   .then(addParameterToRegionMarketURL)
   .then(fetchElement)
-  .then(logElement)
   .catch(logError)
 };
 
@@ -304,11 +303,17 @@ var fetchMarketSellByRegionAndType = function(region, type) {
 //fetchItemTypeUrl(2196);
 //console.log(!!containsId('htttred:types/122345/','types','1223455'));
 
-var logElement = function(elementList) {
-  console.log(elementList.items[0]);
-};
+var logCount = function(result) {
+  console.log("returned: ",result.items.length);
+  return result;
+}
 
-//fetchMarketSellByRegionAndType('The Forge', 2195).then(logElement);
+var logFirst = function(result) {
+  console.log(result.items[0]);
+  return result;
+}
+
+//fetchMarketSellByRegionAndType('The Forge', 448).then(logElement);
 
 /*var testConstellation = require('./dummyObjects').constellation;
 
@@ -328,6 +333,26 @@ searchSystemInConstellationsList('Jita', testRegion.constellations)
 
 require('./io/eveSDE').connect(require('./databaseCredentials'));
 
-require('./io/eveSDE').getLocationsFromSystemName('Fliet')
+var getFlietData = _.once(function() {
+  return require('./io/eveSDE').getLocationsFromSystemName('Fliet');
+});
+
+var getStationIDList = _.once(function() {return getFlietData().then(function(list) {return _.pluck(list, 'stationID')})});
+
+var predicate = function(order) {
+  return getStationIDList()
+}
+
+var filterFliet = function(result) {
+  return _.filter(result, predicate)
+
+};
+
+predicate()
 .then(logger)
 .catch(logError);
+
+/*fetchMarketSellByRegionAndType('Essence', 448)
+.then(logCount)
+.then(logFirst)
+.catch(logError);*/
