@@ -21,11 +21,27 @@ var fetchElement = function(element) {
   }
   console.log("fetching ", url);
   return fetch(url, options)
+  .then(checkSuccess)
   .then(toJSON);
 };
 
+function checkSuccess(response) {
+  if (!response || !response.status) {
+    return Promise.reject("Invalid response:",response);
+  }
+
+  if (response.status === 409) {
+    return Promise.reject("To many requests");
+  }
+
+  if (response.status === 500) {
+    return Promise.reject("Server error. Is this downtime ?");
+  }
+    console.log("fetched with response", response.status);
+  return (response);
+}
+
 function toJSON(response) {
-  console.log("fetched with response", response.status);
   return response.json();
 }
 
@@ -268,7 +284,7 @@ var fetchMarketSellByRegionAndType = function(region, type) {
     console.log(elementList.items[0]);
   }
 
-  Promise.resolve(type)
+  return Promise.resolve(type)
   .then(fetchItemTypeUrl)
   .then(storeTypeURL)
   .then(fetchRegionMarketUrlPartial)
@@ -277,7 +293,8 @@ var fetchMarketSellByRegionAndType = function(region, type) {
   .then(fetchElement)
   .then(logElement)
   .catch(logError)
-}
+};
+
 /*fetchRegionMarketUrl('The Forge')
 .then(logger)
 .catch(logError);*/
@@ -289,104 +306,22 @@ var fetchMarketSellByRegionAndType = function(region, type) {
 
 var logElement = function(elementList) {
   console.log(elementList.items[0]);
-}
-//fetchMarketSellByRegionAndType('The Forge', 2195).then(logElement)
-
-var testConstellation = {
-  "position": {
-    "y": 64999452632293260,
-    "x": -134996400468185440,
-    "z": 103325617317521340
-  },
-  "region": {
-    "href": "https://public-crest.eveonline.com/regions/10000002/"
-  },
-  "systems": [
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000139/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000140/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000141/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000142/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000143/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000144/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/solarsystems/30000145/"
-    }
-  ],
-  "name": "Kimotoro"
 };
 
-/*searchSytemInConstellation("Jita", testConstellation)
-.then(logger)
-.catch(logError)*/
+//fetchMarketSellByRegionAndType('The Forge', 2195).then(logElement);
 
-var testRegion = {
-  "description": "\"The greater the State becomes, the greater humanity under it flourishes.\"",
-  "marketBuyOrders": {
-    "href": "https://public-crest.eveonline.com/market/10000002/orders/buy/"
-  },
-  "name": "The Forge",
-  "constellations": [
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000017/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000018/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000019/"
-    },
-    /*{
-      "href": "https://public-crest.eveonline.com/constellations/20000020/"
-    },*/
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000021/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000022/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000023/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000024/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000025/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000026/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000027/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000028/"
-    },
-    {
-      "href": "https://public-crest.eveonline.com/constellations/20000029/"
-    }
-  ],
-  "marketSellOrders": {
-    "href": "https://public-crest.eveonline.com/market/10000002/orders/sell/"
-  }
-};
+/*var testConstellation = require('./dummyObjects').constellation;
 
-/*searchSystemInConstellationsList('Jita', testRegion.constellations)
+searchSytemInConstellation("Jita", testConstellation)
 .then(logger)
-.catch(logError)*/
+.catch(logError);*/
 
-fetchSystemUrlByName('Jita')
+var testRegion = require('./dummyObjects').region;
+
+searchSystemInConstellationsList('Jita', testRegion.constellations)
 .then(logger)
-.catch(logError);
+.catch(logError)
+
+/*fetchSystemUrlByName('Jita')
+.then(logger)
+.catch(logError);*/
