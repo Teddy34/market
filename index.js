@@ -37,6 +37,11 @@ function checkSuccess(response) {
   if (response.status === 500) {
     return Promise.reject("Server error. Is this downtime ?");
   }
+
+  if (response.status === 503) {
+    return Promise.reject("Server error. Is this downtime ? Are you loading the server ?");
+  }
+
     console.log("fetched with response", response.status);
   return (response);
 }
@@ -51,7 +56,7 @@ function getItems(queryResult) {
   var concatItems = function(newQueryResult) {
     newQueryResult.items = newQueryResult.items.concat(items);
     return newQueryResult;
-  }
+  };
 
   if (items && queryResult.next) {
     // fetch next page instead and agregate;
@@ -81,6 +86,25 @@ function logFirst(result) {
   console.log(result.items[0]);
   return result;
 }
+
+//Math Utilities
+
+function roundXDigits(number, digits) {
+  var rounder = Math.pow(10,digits);
+  return Math.round(rounder*number)/rounder;
+};
+
+function doStatAnalysis(array) {
+  if (!array || !array.length) {
+    throw new Error("empty list for doStatAnalysis");
+  }
+
+  var mean = array.reduce(function(a, b){return a+b;})/array.length;
+  var dev= array.map(function(itm){return (itm-mean)*(itm-mean);});
+  var stDeviation = Math.sqrt(dev.reduce(function(a, b){return a+b;})/array.length);
+  var relStdDeviation =stDeviation/mean;
+  return {mean: roundXDigits(mean,2), stDeviation: stDeviation, relStdDeviation: roundXDigits(relStdDeviation,5)};
+};
 
 // search utilities
 function containsId(strToSearch, strKeyword, strID) {
@@ -245,14 +269,14 @@ var searchSystemInConstellationsList = function(name, constellationList) {
 
   var partialSearchInConstellation = function(constellation) {
     return searchSytemInConstellation(name, constellation);
-  }
+  };
 
   var partialSearchInConstellationList = function(err) {
     if (err === "not found") {
       return searchSystemInConstellationsList(name, constellationList);
     }
     return Promise.reject(err);
-  }
+  };
 
   var findSystemOrIterate = function(constellation) {
     return Promise.resolve(constellation)
@@ -273,14 +297,14 @@ var searchSystemInRegionList = function(name, regionList) {
 
   var partialSearchInConstellationsList = function(region) {
     return searchSystemInConstellationsList(name, region.constellations);
-  }
+  };
 
   var partialSearchInRegions = function(err) {
     if (err === "not found") {
       return searchSystemInRegionList(name, regionList);
     }
     return Promise.reject(err);
-  }
+  };
 
   var findSystemOrIterate = function(region) {
     return Promise.resolve(region)
@@ -388,7 +412,7 @@ var filterBySystem = function(results) {
 .then(logger)
 .catch(logError);*/
 
-var fetchMarketSellBySystemNameAndType = function(typeId, systemName) {
+var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
 
   var getMarketSellOrders = function(systemData) {
     getStationIDList(systemData).then(logger);
@@ -405,14 +429,94 @@ var decorateOrders = function(orders) {
 };
 
 //getSystemData('Fliet')
-fetchMarketSellBySystemNameAndType(448, 'Dodixie')
-.then(decorateOrders)
+/*fetchMarketSellByTypeAndSystemName(448, 'Dodixie')
+.then(decorateOrders)*/
+
+var getAverageCheapestPrice = function(orderList, number) {
+  return _.chain(orderList).take(Math.min(orderList.length, number)).pluck('price').thru(doStatAnalysis).value();
+};
+
+var getAverageCheapestPricePartial = function(number) {
+  return function(orderList) {
+    return getAverageCheapestPrice(orderList, number);
+  };
+};
+
+var getPriceReference = function(itemId) {
+
+  function decorate(analysedPrice) {
+    analysedPrice.itemId = itemId;
+    return analysedPrice;
+  }
+
+  return fetchMarketSellByTypeAndSystemName(itemId, 'Dodixie')
+  .then(decorateOrders)
+  .then(getAverageCheapestPricePartial(3))
+  .then(decorate);
+};
+
+var filterOrdersByPriceTreshold = function(orderList, treshold) {
+  var predicate = function(order) {
+    return (order.price <= treshold);
+  };
+  return _.filter(orderList, predicate);
+};
+
+var getStockAtReasonablePrice = function(itemId, systemName, nReasonable) {
+
+  var fetchData = function() {
+
+    var systemSellOrders = fetchMarketSellByTypeAndSystemName(itemId, systemName);
+    var priceReference = getPriceReference(itemId);
+
+    return Promise.all([systemSellOrders, priceReference]);
+  };
+
+  var getReasonablePrice = function(results) {
+    return nReasonable * results[1].mean;
+  };
+
+  var filterPartial = function(results) {
+    return filterOrdersByPriceTreshold(results[0], getReasonablePrice(results));
+  };
+
+  var mergeData = function(results) {
+    var volumeAvailable = _(results).thru(filterPartial).reduce(reduceVolume, 0);
+    return {
+      itemId: itemId,
+      systemName: systemName,
+      hubData : results[1],
+      reasonablePrice: getReasonablePrice(results),
+      volumeAvailable: volumeAvailable
+    };
+  };
+
+  return Promise.resolve()
+    .then(fetchData)
+    .then(mergeData);
+};
+
+var reduceVolume = function(memo, order) {
+  return memo += order.volume;
+};
+
+getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonablePrice) {
+
+  var partial = function(typeId) {
+    return getStockAtReasonablePrice(typeId, systemName, reasonablePrice);
+  };
+
+  return Promise.all(_.map(typeIdList,partial));
+};
+
+//getPriceReference(448)
+//predicate()
+//fetchMarketSellByTypeAndSystemName(608, 'Dodixie')
+//getStockAtReasonablePrice(448, 'Fliet', 1.15)
+getMultipleStocksAtReasonablePrice([448, 608, 17841], 'Fliet', 1.15)
+//.then(decorateOrders)
 .then(logger)
 .catch(logError);
-
-/*predicate()
-.then(logger)
-.catch(logError);*/
 
 /*fetchMarketSellByRegionAndType('Essence', 448)
 .then(logCount)
