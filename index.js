@@ -333,24 +333,32 @@ searchSystemInConstellationsList('Jita', testRegion.constellations)
 
 require('./io/eveSDE').connect(require('./databaseCredentials'));
 
-var getFlietData = _.once(function() {
+var getFlietData = function() {
   return require('./io/eveSDE').getLocationsFromSystemName('Fliet');
-});
-
-var getStationIDList = _.once(function() {return getFlietData().then(function(list) {return _.pluck(list, 'stationID')})});
-
-var predicate = function(order) {
-  return getStationIDList()
-}
-
-var filterFliet = function(result) {
-  return _.filter(result, predicate)
-
 };
 
-predicate()
+var getStationIDList = function() {return getFlietData().then(function(list) {return _.pluck(list, 'stationID')})};
+
+
+var filterFliet = function(results) {
+  var marketOrders = results[0];
+  var stationIDList = results[1];
+
+  var predicate = function(order) {
+    return (stationIDList.indexOf(order.location.id_str) !== -1 );
+  }
+
+  return _.filter(marketOrders.items, predicate)
+};
+
+Promise.all([fetchMarketSellByRegionAndType('Essence', 448), getStationIDList()])
+.then(filterFliet)
 .then(logger)
 .catch(logError);
+
+/*predicate()
+.then(logger)
+.catch(logError);*/
 
 /*fetchMarketSellByRegionAndType('Essence', 448)
 .then(logCount)
