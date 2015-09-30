@@ -92,7 +92,7 @@ function logFirst(result) {
 function roundXDigits(number, digits) {
   var rounder = Math.pow(10,digits);
   return Math.round(rounder*number)/rounder;
-};
+}
 
 function doStatAnalysis(array) {
   if (!array || !array.length) {
@@ -104,7 +104,7 @@ function doStatAnalysis(array) {
   var stDeviation = Math.sqrt(dev.reduce(function(a, b){return a+b;})/array.length);
   var relStdDeviation =stDeviation/mean;
   return {mean: roundXDigits(mean,2), stDeviation: stDeviation, relStdDeviation: roundXDigits(relStdDeviation,5)};
-};
+}
 
 // search utilities
 function containsId(strToSearch, strKeyword, strID) {
@@ -150,7 +150,7 @@ var findRegionByIdPartial = function(regionId) {
 
 // simple fixed pluck decorators
 
-function getRegions(listObject) {
+function getRegionEntryPoint(listObject) {
   return listObject.regions;
 }
 
@@ -178,12 +178,10 @@ function getRefUrl (item) {
 }
 
 // CREST entry point (end point ?)
-var getEntryPoint = function(strCrestEntryPointUrl) {
+var getEntryPoint = _.throttle(function(strCrestEntryPointUrl) {
   return Promise.resolve(crestEntryPointUrl)
   .then(fetchElement);
-};
-
-
+},60*60*1000);
 
 // functions to fetch useful data using tools seen on top
 
@@ -196,12 +194,17 @@ var fetchItems = _.throttle(function() {
   .then(getItems);
 },60*60*1000);
 
-var fetchRegionMarketUrlByName = function(strRegionName) {
+var getRegionList = _.throttle(function() {
   return Promise.resolve(crestEntryPointUrl)
   .then(getEntryPoint)
-  .then(getRegions)
+  .then(getRegionEntryPoint)
   .then(fetchElement)
-  .then(getItems)
+  .then(getItems);
+},60*60*1000);
+
+var fetchRegionMarketUrlByName = function(strRegionName) {
+  return Promise.resolve()
+  .then(getRegionList)
   .then(findByNamePartial(strRegionName))
   .then(fetchElement)
   .then(getMarketSellOrders)
@@ -209,11 +212,8 @@ var fetchRegionMarketUrlByName = function(strRegionName) {
 };
 
 fetchRegionMarketUrlById = function(regionId) {
-    return Promise.resolve(crestEntryPointUrl)
-  .then(getEntryPoint)
-  .then(getRegions)
-  .then(fetchElement)
-  .then(getItems)
+  return Promise.resolve()
+  .then(getRegionList)
   .then(findRegionByIdPartial(regionId))
   .then(fetchElement)
   .then(getMarketSellOrders)
@@ -230,7 +230,6 @@ var fetchItemTypeUrl = function(itemNumber) {
   .then(fetchItems)
   .then(find)
   .then(getRefUrl)
-  .then(logger)
   .catch(logError);
 };
 
@@ -326,7 +325,7 @@ var searchSystemInRegionList = function(name, regionList) {
  
   return Promise.resolve(crestEntryPointUrl)
   .then(getEntryPoint)
-  .then(getRegions)
+  .then(getRegionEntryPoint)
   .then(fetchElement)
   .then(getItems)
   .then(partialSearchInRegionList);
@@ -354,7 +353,6 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   .then(fetchItemTypeUrl)
   .then(storeTypeURL)
   .then(fetchRegionMarketUrlByIdPartial)
-  .then(logger)
   .then(addParameterToRegionMarketURL)
   .then(fetchElement)
   .catch(logError);
@@ -415,7 +413,7 @@ var filterBySystem = function(results) {
 var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
 
   var getMarketSellOrders = function(systemData) {
-    getStationIDList(systemData).then(logger);
+    getStationIDList(systemData);
     return Promise.all([fetchMarketSellByRegionIdAndType(systemData[0].regionID, typeId), getStationIDList(systemData)])
     .then(filterBySystem);
   };
@@ -513,8 +511,7 @@ getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonable
 //predicate()
 //fetchMarketSellByTypeAndSystemName(608, 'Dodixie')
 //getStockAtReasonablePrice(448, 'Fliet', 1.15)
-getMultipleStocksAtReasonablePrice([448, 608, 17841], 'Fliet', 1.15)
-//.then(decorateOrders)
+getMultipleStocksAtReasonablePrice([448, 3017, 2048, 4025], 'Fliet', 1.15)
 .then(logger)
 .catch(logError);
 
