@@ -111,20 +111,20 @@ var getRegions = function(listObject) {
 
 var getConstellations = function(region) {
   return region.constellations;
-}
+};
 
 var getSystems = function(constellations) {
   return constellations.systems;
-}
+};
 
 var getItemTypes = function(listObject) {
   return listObject.itemTypes;
-}
+};
 
 var getEntryPoint = function(strCrestEntryPointUrl) {
   return Promise.resolve(crestEntryPointUrl)
   .then(fetchElement);
-}
+};
 
 var getMarketSellOrders = function(region) {
   return region.marketSellOrders;
@@ -149,17 +149,21 @@ var fetchRegionMarketUrl = function(strRegionName) {
   .then(getItems)
   .then(findByNamePartial(strRegionName))
   .then(fetchElement)
-  .then(getMarketSellOrders) 
+  .then(getMarketSellOrders)
   .catch(logError);
+};
+
+var findByProperty = function(itemList, propertyValue, propertyName) {
+  return _.find(itemList, function(item) {
+      return containsId(item.href,propertyName,propertyValue);
+  });
 };
 
 var fetchItemTypeUrl = function(itemNumber) {
 
   var find = function(itemList) {
-    return _.find(itemList, function(item) {
-      return containsId(item.href,'types',itemNumber);
-    });
-  }
+    return findByProperty(itemList, itemNumber, 'types');
+  };
 
   return Promise.resolve()
   .then(fetchItems)
@@ -270,19 +274,19 @@ var fetchMarketSellByRegionAndType = function(region, type) {
   var itemTypeURL;
   var storeTypeURL = function storeTypeURL (url) {
     itemTypeURL = url;
-  }
+  };
 
   var addParameterToRegionMarketURL = function (marketURL) {
     return marketURL+'?type='+itemTypeURL;
-  }
+  };
 
   var fetchRegionMarketUrlPartial = function() {
     return fetchRegionMarketUrl(region).then(getRefUrl);
-  }
+  };
 
   var logElement = function(elementList) {
     console.log(elementList.items[0]);
-  }
+  };
 
   return Promise.resolve(type)
   .then(fetchItemTypeUrl)
@@ -291,7 +295,7 @@ var fetchMarketSellByRegionAndType = function(region, type) {
   .then(logger)
   .then(addParameterToRegionMarketURL)
   .then(fetchElement)
-  .catch(logError)
+  .catch(logError);
 };
 
 /*fetchRegionMarketUrl('The Forge')
@@ -333,28 +337,30 @@ searchSystemInConstellationsList('Jita', testRegion.constellations)
 
 require('./io/eveSDE').connect(require('./databaseCredentials'));
 
-var getFlietData = function() {
-  return require('./io/eveSDE').getLocationsFromSystemName('Fliet');
+var getSystemData = function(systemName) {
+  return require('./io/eveSDE').getLocationsFromSystemName(systemName);
 };
 
-var getStationIDList = function() {return getFlietData().then(function(list) {return _.pluck(list, 'stationID')})};
+var getStationIDList = function(systemName) {return getSystemData(systemName).then(function(list) {return _.pluck(list, 'stationID');});};
 
 
-var filterFliet = function(results) {
+var filterBySystem = function(results) {
   var marketOrders = results[0];
   var stationIDList = results[1];
 
   var predicate = function(order) {
     return (stationIDList.indexOf(order.location.id_str) !== -1 );
-  }
+  };
 
-  return _.filter(marketOrders.items, predicate)
+  return _.filter(marketOrders.items, predicate);
 };
 
-Promise.all([fetchMarketSellByRegionAndType('Essence', 448), getStationIDList()])
-.then(filterFliet)
+Promise.all([fetchMarketSellByRegionAndType('Essence', 448), getStationIDList('Fliet')])
+.then(filterBySystem)
 .then(logger)
 .catch(logError);
+
+
 
 /*predicate()
 .then(logger)
