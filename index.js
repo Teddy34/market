@@ -63,6 +63,7 @@ function getItems(queryResult) {
   return queryResult.items;
 }
 
+// log utilities
 function logger(input) {
   console.log(input);
   return input;
@@ -72,6 +73,79 @@ function logError(error) {
   console.error("Error:",error);
 }
 
+function logCount(result) {
+  console.log("returned: ",result.items.length);
+  return result;
+}
+function logFirst(result) {
+  console.log(result.items[0]);
+  return result;
+}
+
+// search utilities
+function containsId(strToSearch, strKeyword, strID) {
+  return new RegExp(strKeyword+'/'+strID+'/').exec(strToSearch);
+}
+
+// returns first entry where condition is satisfied and stop the loop
+var findInUrl = function(itemList, propertyName, propertyValue) {
+  return _.find(itemList, function(item) {
+      return containsId(item.href,propertyName,propertyValue);
+  });
+};
+
+// partial application pattern. That could be replaced a more generic function (see Javascript Allongé)
+var findInUrlPartial = function(propertyName, propertyValue) {
+  return function(list) {
+    return findInUrl(list, propertyName, propertyValue);
+  };
+};
+
+// returns first entry where condition is satisfied and stop the loop
+var findByProperty = function( list, strProp, strPropValue) {
+  var propObject = {};
+  propObject[strProp] = strPropValue;
+  return _.findWhere(list, propObject);
+};
+
+// partial application pattern. That could be replaced a more generic function (see Javascript Allongé)
+var findByPropertyPartial = function(strProp, strPropValue) {
+  return function(list) {
+    return findByProperty(list, strProp, strPropValue);
+  };
+};
+
+// high lvl partial patterns
+var findByNamePartial = function(strName) {
+  return findByPropertyPartial('name', strName);
+};
+
+var findRegionByIdPartial = function(regionId) {
+  return findInUrlPartial('regions', regionId);
+};
+
+// simple fixed pluck decorators
+
+function getRegions(listObject) {
+  return listObject.regions;
+}
+
+function getConstellations(region) {
+  return region.constellations;
+}
+
+function getSystems(constellations) {
+  return constellations.systems;
+}
+
+function getItemTypes(listObject) {
+  return listObject.itemTypes;
+}
+
+function getMarketSellOrders(region) {
+  return region.marketSellOrders;
+}
+
 function getRefUrl (item) {
   if (! item || !item.href) {
     throw new Error("href not found");
@@ -79,56 +153,13 @@ function getRefUrl (item) {
   return item.href;
 }
 
-function containsId(strToSearch, strKeyword, strID) {
-  return new RegExp(strKeyword+'/'+strID+'/').exec(strToSearch);
-}
-
-var findByProp = function( list, strProp, strPropValue) {
-  var propObject = {};
-  propObject[strProp] = strPropValue;
-  return _.findWhere(list, propObject);
-};
-
-var findByName = function( list, strName ) {
-  return findByProp(list, 'name', strName);
-};
-
-var findByNamePartial = function(strName) {
-  return function(list) {
-    return findByName(list, strName);
-  };
-};
-
-var findByNamePartial = function(strName) {
-  return function(list) {
-    return findByName(list, strName);
-  };
-};
-
-var getRegions = function(listObject) {
-  return listObject.regions;
-};
-
-var getConstellations = function(region) {
-  return region.constellations;
-};
-
-var getSystems = function(constellations) {
-  return constellations.systems;
-};
-
-var getItemTypes = function(listObject) {
-  return listObject.itemTypes;
-};
-
+// CREST entry point (end point ?)
 var getEntryPoint = function(strCrestEntryPointUrl) {
   return Promise.resolve(crestEntryPointUrl)
   .then(fetchElement);
 };
 
-var getMarketSellOrders = function(region) {
-  return region.marketSellOrders;
-};
+
 
 // functions to fetch useful data using tools seen on top
 
@@ -141,7 +172,7 @@ var fetchItems = _.throttle(function() {
   .then(getItems);
 },60*60*1000);
 
-var fetchRegionMarketUrl = function(strRegionName) {
+var fetchRegionMarketUrlByName = function(strRegionName) {
   return Promise.resolve(crestEntryPointUrl)
   .then(getEntryPoint)
   .then(getRegions)
@@ -153,16 +184,22 @@ var fetchRegionMarketUrl = function(strRegionName) {
   .catch(logError);
 };
 
-var findByProperty = function(itemList, propertyValue, propertyName) {
-  return _.find(itemList, function(item) {
-      return containsId(item.href,propertyName,propertyValue);
-  });
+fetchRegionMarketUrlById = function(regionId) {
+    return Promise.resolve(crestEntryPointUrl)
+  .then(getEntryPoint)
+  .then(getRegions)
+  .then(fetchElement)
+  .then(getItems)
+  .then(findRegionByIdPartial(regionId))
+  .then(fetchElement)
+  .then(getMarketSellOrders)
+  .catch(logError);
 };
 
 var fetchItemTypeUrl = function(itemNumber) {
 
   var find = function(itemList) {
-    return findByProperty(itemList, itemNumber, 'types');
+    return findInUrl(itemList, 'types', itemNumber);
   };
 
   return Promise.resolve()
@@ -256,11 +293,12 @@ var searchSystemInRegionList = function(name, regionList) {
   .then(findSystemOrIterate);
 };
 
-var fetchSystemUrlByName = function(name) {
+//warning: will request LOTS of things to CREST
+/*var fetchSystemUrlByName = function(name) {
 
   var partialSearchInRegionList = function(regionList) {
-    return searchSystemInRegionList(name, regionList)
-  }
+    return searchSystemInRegionList(name, regionList);
+  };
  
   return Promise.resolve(crestEntryPointUrl)
   .then(getEntryPoint)
@@ -268,9 +306,9 @@ var fetchSystemUrlByName = function(name) {
   .then(fetchElement)
   .then(getItems)
   .then(partialSearchInRegionList);
-};
+};*/
 
-var fetchMarketSellByRegionAndType = function(region, type) {
+var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   var itemTypeURL;
   var storeTypeURL = function storeTypeURL (url) {
     itemTypeURL = url;
@@ -280,8 +318,8 @@ var fetchMarketSellByRegionAndType = function(region, type) {
     return marketURL+'?type='+itemTypeURL;
   };
 
-  var fetchRegionMarketUrlPartial = function() {
-    return fetchRegionMarketUrl(region).then(getRefUrl);
+  var fetchRegionMarketUrlByIdPartial = function() {
+    return fetchRegionMarketUrlById(regionId).then(getRefUrl);
   };
 
   var logElement = function(elementList) {
@@ -291,7 +329,7 @@ var fetchMarketSellByRegionAndType = function(region, type) {
   return Promise.resolve(type)
   .then(fetchItemTypeUrl)
   .then(storeTypeURL)
-  .then(fetchRegionMarketUrlPartial)
+  .then(fetchRegionMarketUrlByIdPartial)
   .then(logger)
   .then(addParameterToRegionMarketURL)
   .then(fetchElement)
@@ -306,16 +344,6 @@ var fetchMarketSellByRegionAndType = function(region, type) {
 //fetchItemTypeUrl(2195);
 //fetchItemTypeUrl(2196);
 //console.log(!!containsId('htttred:types/122345/','types','1223455'));
-
-var logCount = function(result) {
-  console.log("returned: ",result.items.length);
-  return result;
-}
-
-var logFirst = function(result) {
-  console.log(result.items[0]);
-  return result;
-}
 
 //fetchMarketSellByRegionAndType('The Forge', 448).then(logElement);
 
@@ -341,7 +369,7 @@ var getSystemData = function(systemName) {
   return require('./io/eveSDE').getLocationsFromSystemName(systemName);
 };
 
-var getStationIDList = function(systemName) {return getSystemData(systemName).then(function(list) {return _.pluck(list, 'stationID');});};
+var getStationIDList = function(systemData) {return Promise.resolve(systemData).then(function(list) {return _.pluck(list, 'stationID');});};
 
 
 var filterBySystem = function(results) {
@@ -355,12 +383,32 @@ var filterBySystem = function(results) {
   return _.filter(marketOrders.items, predicate);
 };
 
-Promise.all([fetchMarketSellByRegionAndType('Essence', 448), getStationIDList('Fliet')])
+/*Promise.all([fetchMarketSellByRegionIdAndType('10000064', 448), getSystemData('Fliet').then(getStationIDList)])
 .then(filterBySystem)
 .then(logger)
+.catch(logError);*/
+
+var fetchMarketSellBySystemNameAndType = function(typeId, systemName) {
+
+  var getMarketSellOrders = function(systemData) {
+    getStationIDList(systemData).then(logger);
+    return Promise.all([fetchMarketSellByRegionIdAndType(systemData[0].regionID, typeId), getStationIDList(systemData)])
+    .then(filterBySystem);
+  };
+
+  return getSystemData(systemName)
+  .then(getMarketSellOrders);
+};
+
+var decorateOrders = function(orders) {
+  return _(orders).map(function(order) {return {price: order.price, volume: order.volume};}).sortBy('price').value();
+};
+
+//getSystemData('Fliet')
+fetchMarketSellBySystemNameAndType(448, 'Dodixie')
+.then(decorateOrders)
+.then(logger)
 .catch(logError);
-
-
 
 /*predicate()
 .then(logger)
