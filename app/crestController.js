@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 
+var tools = require('../tools');
 var crestConnector = require('../io/crestConnector');
 var crestEndPoint = require('../parameters').crestEndPoint;
 
@@ -236,18 +237,8 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   .then(fetchRegionMarketUrlByIdPartial)
   .then(addParameterToRegionMarketURL)
   .then(crestConnector.fetchPoint)
-  .catch(logError);
+  .catch(tools.logError);
 };
-
-// log utilities
-function logger(input) {
-  console.log(input);
-  return input;
-}
-
-function logError(error) {
-  console.error("Error:",error);
-}
 
 module.exports = {
   fetchMarketSellByRegionIdAndType: fetchMarketSellByRegionIdAndType

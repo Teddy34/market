@@ -21,7 +21,6 @@ var filterBySystem = function(results) {
 };
 
 var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
-
   var getMarketSellOrders = function(systemDataList) {
     return Promise.all([crest.fetchMarketSellByRegionIdAndType(systemDataList[0].regionID, typeId),
                         getStationIDList(systemDataList)])

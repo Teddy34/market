@@ -1,11 +1,33 @@
 var fetch = require('node-fetch');
 var _ = require('lodash');
+var tools = require('../tools');
 
 var options = {
   'Accept': 'application/json',
   'Content-Type' : 'application/vnd.ccp.eve.Api-v3+json; charset=utf-8',
   'Accept-Encoding': 'gzip'
 };
+
+function checkSuccess(response) {
+  if (!response || !response.status) {
+    return Promise.reject("Invalid response:",response);
+  }
+
+  switch(response.status) {
+    case 403: return Promise.reject(new Error("Refused: to many requests"));
+    case 404: return Promise.reject(new Error("Refused: ressource not found"));
+    case 409: return Promise.reject(new Error("Conflict: to many requests?"));
+    case 500: return Promise.reject(new Error("Server error. Is this downtime?"));
+    case 503: return Promise.reject(new Error("Server error. Is this downtime? Are you overloading the server?"));
+  }
+  
+  console.log("fetched with response", response.status);
+  return (response);
+}
+
+function fromJSON(response) {
+  return response.json();
+}
 
 var fetchPoint = function(element) {
   var url = null;
@@ -21,33 +43,9 @@ var fetchPoint = function(element) {
   console.log("fetching ", url);
   return fetch(url, options)
   .then(checkSuccess)
-  .then(fromJSON);
+  .then(fromJSON)
+  .catch(tools.logError);
 };
-
-function checkSuccess(response) {
-  if (!response || !response.status) {
-    return Promise.reject("Invalid response:",response);
-  }
-
-  if (response.status === 403) {
-    return Promise.reject("Refused: to many requests");
-  }
-
-  if (response.status === 409) {
-    return Promise.reject("Conflict: to many requests?");
-  }
-
-  if (response.status === 500) {
-    return Promise.reject("Server error. Is this downtime?");
-  }
-
-  if (response.status === 503) {
-    return Promise.reject("Server error. Is this downtime? Are you overloading the server?");
-  }
-
-    console.log("fetched with response", response.status);
-  return (response);
-}
 
 function fetchList(queryResult) {
   var items = queryResult.items;
@@ -62,13 +60,8 @@ function fetchList(queryResult) {
     return fetchPoint(queryResult.next)
       .then(concatItems)
       .then(fetchList);
-
   }
   return queryResult.items;
-}
-
-function fromJSON(response) {
-  return response.json();
 }
 
 module.exports = {
