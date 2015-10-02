@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 var marketData = require('./marketData');
 
 var decorateOrders = function(orders) {
@@ -25,7 +27,7 @@ var getPriceReference = function(itemId) {
     return analysedPrice;
   }
 
-  return fetchMarketSellByTypeAndSystemName(itemId, 'Dodixie')
+  return marketData.fetchMarketSellByTypeAndSystemName(itemId, 'Dodixie')
   .then(decorateOrders)
   .then(getAverageCheapestPricePartial(3))
   .then(decorate);
@@ -42,7 +44,7 @@ var getStockAtReasonablePrice = function(itemId, systemName, nReasonable) {
 
   var fetchData = function() {
 
-    var systemSellOrders = fetchMarketSellByTypeAndSystemName(itemId, systemName);
+    var systemSellOrders = marketData.fetchMarketSellByTypeAndSystemName(itemId, systemName);
     var priceReference = getPriceReference(itemId);
 
     return Promise.all([systemSellOrders, priceReference]);
@@ -83,4 +85,8 @@ getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonable
   };
 
   return Promise.all(_.map(typeIdList,partial));
+};
+
+module.exports = {
+  getMultipleStocksAtReasonablePrice: getMultipleStocksAtReasonablePrice
 };

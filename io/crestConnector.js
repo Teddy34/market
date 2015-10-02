@@ -48,10 +48,29 @@ function checkSuccess(response) {
   return (response);
 }
 
+function fetchPoint(queryResult) {
+  var items = queryResult.items;
+
+  var concatItems = function(newQueryResult) {
+    newQueryResult.items = newQueryResult.items.concat(items);
+    return newQueryResult;
+  };
+
+  if (items && queryResult.next) {
+    // fetch next page instead and agregate;
+    return fetchElement(queryResult.next)
+      .then(concatItems)
+      .then(fetchPoint);
+
+  }
+  return queryResult.items;
+}
+
 function fromJSON(response) {
   return response.json();
 }
 
 module.exports = {
-  fetchElement: fetchElement
-}
+  fetchElement: fetchElement,
+  fetchPoint: fetchPoint
+};

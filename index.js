@@ -1,7 +1,9 @@
-var _ = require('lodash');
-var crestConnector = require('./io/crestConnector');
+var parameters = require('./');
+var sdeConnector = require('./io/sdeConnector');
 
-var crestEntryPointUrl = "https://public-crest.eveonline.com/";
+var marketAnalyser = require('./app/marketAnalyser');
+
+sdeConnector.connect();
 
 // log utilities
 function logger(input) {
@@ -13,24 +15,14 @@ function logError(error) {
   console.error("Error:",error);
 }
 
-function logCount(result) {
-  console.log("returned: ",result.items.length);
-  return result;
-}
-function logFirst(result) {
-  console.log(result.items[0]);
-  return result;
-}
-
 //getPriceReference(448)
 //predicate()
 //fetchMarketSellByTypeAndSystemName(608, 'Dodixie')
 //getStockAtReasonablePrice(448, 'Fliet', 1.15)
-getMultipleStocksAtReasonablePrice([448, 3017, 2048, 4025], 'Fliet', 1.15)
+marketAnalyser.getMultipleStocksAtReasonablePrice([448, 3017, 2048, 4025], 'Fliet', 1.15)
 .then(logger)
 .catch(logError);
 
 /*fetchMarketSellByRegionAndType('Essence', 448)
 .then(logCount)
-.then(logFirst)
 .catch(logError);*/

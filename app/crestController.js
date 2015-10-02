@@ -3,6 +3,7 @@
 var _ = require('lodash');
 
 var crestConnector = require('../io/crestConnector');
+var crestEndPoint = require('../parameters').crestEndPoint;
 
 // search utilities
 function containsId(strToSearch, strKeyword, strID) {
@@ -48,23 +49,23 @@ var findRegionByIdPartial = function(regionId) {
 
 // simple fixed pluck decorators
 
-function getRegionEntryPoint(listObject) {
+function getRegionEndPoint(listObject) {
   return listObject.regions;
 }
 
-function getConstellations(region) {
+function getConstellationsEndPoint(region) {
   return region.constellations;
 }
 
-function getSystems(constellations) {
+function getSystemsEndPoint(constellations) {
   return constellations.systems;
 }
 
-function getItemTypes(listObject) {
-  return listObject.itemTypes;
+function getItemTypesEndPoint(itemTypeEndPoint) {
+  return itemTypeEndPoint.itemTypes;
 }
 
-function getMarketSellOrders(region) {
+function getMarketSellOrdersEndPoint(region) {
   return region.marketSellOrders;
 }
 
@@ -76,36 +77,37 @@ function getRefUrl (item) {
 }
 
 // CREST entry point (end point ?)
-var getEntryPoint = _.throttle(function(strCrestEntryPointUrl) {
-  return Promise.resolve(crestEntryPointUrl)
-  .then(crestConnector.fetchElement);
+var getCrestEndPoint = _.throttle(function() {
+  return Promise.resolve(crestEndPoint)
+  .then(crestConnector.fetchPoint);
 },60*60*1000);
+
 
 // functions to fetch useful data using tools seen on top
 
 //throttled 1 hour
-var fetchItems = _.throttle(function() {
-    return Promise.resolve(crestEntryPointUrl)
-  .then(getEntryPoint)
-  .then(getItemTypes)
-  .then(crestConnector.fetchElement)
-  .then(getItems);
+var fetchItemList = _.throttle(function() {
+    return Promise.resolve()
+  .then(getCrestEndPoint)
+  .then(getItemTypesEndPoint)
+  .then(crestConnector.fetchPoint)
+  .then(crestConnector.fetchList);
 },60*60*1000);
 
 var getRegionList = _.throttle(function() {
-  return Promise.resolve(crestEntryPointUrl)
-  .then(getEntryPoint)
-  .then(getRegionEntryPoint)
-  .then(crestConnector.fetchElement)
-  .then(getItems);
+  return Promise.resolve()
+  .then(getCrestEndPoint)
+  .then(getRegionEndPoint)
+  .then(crestConnector.fetchPoint)
+  .then(crestConnector.fetchList);
 },60*60*1000);
 
 var fetchRegionMarketUrlByName = function(strRegionName) {
   return Promise.resolve()
   .then(getRegionList)
   .then(findByNamePartial(strRegionName))
-  .then(crestConnector.fetchElement)
-  .then(getMarketSellOrders)
+  .then(crestConnector.fetchPoint)
+  .then(getMarketSellOrdersEndPoint)
   .catch(logError);
 };
 
@@ -113,8 +115,8 @@ fetchRegionMarketUrlById = function(regionId) {
   return Promise.resolve()
   .then(getRegionList)
   .then(findRegionByIdPartial(regionId))
-  .then(crestConnector.fetchElement)
-  .then(getMarketSellOrders)
+  .then(crestConnector.fetchPoint)
+  .then(getMarketSellOrdersEndPoint)
   .catch(logError);
 };
 
@@ -125,7 +127,7 @@ var fetchItemTypeUrl = function(itemNumber) {
   };
 
   return Promise.resolve()
-  .then(fetchItems)
+  .then(fetchItemList)
   .then(find)
   .then(getRefUrl)
   .catch(logError);
@@ -144,7 +146,7 @@ var searchSystemInSystemList = function(name, systemList) {
   };
 
   return Promise.resolve(firstSystem)
-  .then(crestConnector.fetchElement)
+  .then(crestConnector.fetchPoint)
   .then(findSystemOrIterate);
 };
 
@@ -155,7 +157,7 @@ var searchSytemInConstellation = function(name, constellation) {
   };
 
   return Promise.resolve(constellation)
-  .then(getSystems)
+  .then(getSystemsEndPoint)
   .then(partialSearch);
 };
 
@@ -182,7 +184,7 @@ var searchSystemInConstellationsList = function(name, constellationList) {
   };
 
   return Promise.resolve(firstConstellation)
-  .then(crestConnector.fetchElement)
+  .then(crestConnector.fetchPoint)
   .then(findSystemOrIterate);
 };
 
@@ -210,7 +212,7 @@ var searchSystemInRegionList = function(name, regionList) {
   };
 
   return Promise.resolve(firstRegion)
-  .then(crestConnector.fetchElement)
+  .then(crestConnector.fetchPoint)
   .then(findSystemOrIterate);
 };
 
@@ -233,7 +235,7 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   .then(storeTypeURL)
   .then(fetchRegionMarketUrlByIdPartial)
   .then(addParameterToRegionMarketURL)
-  .then(crestConnector.fetchElement)
+  .then(crestConnector.fetchPoint)
   .catch(logError);
 };
 
