@@ -1,4 +1,5 @@
 var fetch = require('node-fetch');
+var _ = require('lodash');
 
 var options = {
   'Accept': 'application/json',
@@ -6,7 +7,7 @@ var options = {
   'Accept-Encoding': 'gzip'
 };
 
-var fetchElement = function(element) {
+var fetchPoint = function(element) {
   var url = null;
   if (_.isObject(element) && element.href) {
     url = element.href;
@@ -48,7 +49,7 @@ function checkSuccess(response) {
   return (response);
 }
 
-function fetchPoint(queryResult) {
+function fetchList(queryResult) {
   var items = queryResult.items;
 
   var concatItems = function(newQueryResult) {
@@ -58,9 +59,9 @@ function fetchPoint(queryResult) {
 
   if (items && queryResult.next) {
     // fetch next page instead and agregate;
-    return fetchElement(queryResult.next)
+    return fetchPoint(queryResult.next)
       .then(concatItems)
-      .then(fetchPoint);
+      .then(fetchList);
 
   }
   return queryResult.items;
@@ -71,6 +72,6 @@ function fromJSON(response) {
 }
 
 module.exports = {
-  fetchElement: fetchElement,
+  fetchList: fetchList,
   fetchPoint: fetchPoint
 };

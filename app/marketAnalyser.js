@@ -2,13 +2,33 @@ var _ = require('lodash');
 
 var marketData = require('./marketData');
 
+
+//Math Utilities
+
+function roundXDigits(number, digits) {
+  var rounder = Math.pow(10,digits);
+  return Math.round(rounder*number)/rounder;
+}
+
+function doStatAnalysis(array) {
+  if (!array || !array.length) {
+    throw new Error("empty list for doStatAnalysis");
+  }
+
+  var mean = array.reduce(function(a, b){return a+b;})/array.length;
+  var dev= array.map(function(itm){return (itm-mean)*(itm-mean);});
+  var stDeviation = Math.sqrt(dev.reduce(function(a, b){return a+b;})/array.length);
+  var relStdDeviation =stDeviation/mean;
+  return {mean: roundXDigits(mean,2), stDeviation: roundXDigits(stDeviation,2), relStdDeviation: roundXDigits(relStdDeviation,4)};
+}
+
+// decorators;
+
 var decorateOrders = function(orders) {
   return _(orders).map(function(order) {return {price: order.price, volume: order.volume};}).sortBy('price').value();
 };
 
-//eveSDE.getLocationsFromSystemName('Fliet')
-/*fetchMarketSellByTypeAndSystemName(448, 'Dodixie')
-.then(decorateOrders)*/
+// primitives
 
 var getAverageCheapestPrice = function(orderList, number) {
   return _.chain(orderList).take(Math.min(orderList.length, number)).pluck('price').thru(doStatAnalysis).value();

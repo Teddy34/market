@@ -2,10 +2,6 @@
 
 var sdeConnector = require('../io/sdeConnector');
 
-var connect = function(connectionString) {
-  return sdeConnector.connect(connectionString);
-};
-
 var getSystemIDFromSystemName = function(systemName) {
   return sdeConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName" FROM "mapSolarSystems" AS "s" WHERE "solarSystemName" = \''+systemName+'\'');
 };
@@ -24,7 +20,6 @@ function getRows(result) {
 }
 
 module.exports = {
-  connect: connect,
   getSystemIDFromSystemName: getSystemIDFromSystemName,
   getLocationsFromSystemID: getLocationsFromSystemID,
   getLocationsFromSystemName: getLocationsFromSystemName

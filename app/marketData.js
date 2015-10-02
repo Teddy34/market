@@ -6,7 +6,7 @@ var crest = require('./crestController');
 var sde = require('./sdeController');
 
 var getStationIDList = function(systemList) {
-  return _.pluck(list, 'stationID');
+  return _.pluck(systemList, 'stationID');
 };
 
 var filterBySystem = function(results) {

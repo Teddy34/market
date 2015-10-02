@@ -1,10 +1,13 @@
 var pg = require('pg');
 var _ = require('lodash');
+
+var parameters = require('../parameters');
+
 var clientConnected = null;
 
-var connect = _.once(function(connectionString) {
+var connect = _.once(function() {
   return clientConnected = new Promise(function(resolve, reject) {
-      pg.connect(connectionString, function(err, client, done) {
+      pg.connect(parameters.sdeConnectionString, function(err, client, done) {
       if(err) {
         console.error('Error unable to connect to database:', err)
         reject(err);
