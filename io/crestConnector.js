@@ -25,7 +25,7 @@ var addToPool = function(url) {
   return promise.then(fetchPoint);
 };
 
-setInterval(removeFromPool, 200);
+setInterval(removeFromPool, 105);
 
 function checkSuccess(response) {
   if (!response || !response.status) {

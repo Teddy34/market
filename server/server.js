@@ -24,7 +24,7 @@ var initServer = function(input) {
   webServer.use('/', function(req,res) {
     console.log('asked /');
     Promise.resolve()
-    .then(application.serveSample)
+    .then(application.serveHTML)
     .then(function(response) {
       res.send(response);
     })

@@ -12,8 +12,14 @@ function roundXDigits(number, digits) {
 
 function doStatAnalysis(array) {
   if (!array || !array.length) {
-    throw new Error("empty list for doStatAnalysis");
-  }
+    if (array.length === 0) {
+      return {mean:0, stDeviation: 0, relStdDeviation: 0};
+      }
+    else {
+      throw new Error("empty list for doStatAnalysis");
+    }
+  }     
+
 
   var mean = array.reduce(function(a, b){return a+b;})/array.length;
   var dev= array.map(function(itm){return (itm-mean)*(itm-mean);});
@@ -71,7 +77,7 @@ var getStockAtReasonablePrice = function(itemId, systemName, nReasonable) {
   };
 
   var getReasonablePrice = function(results) {
-    return nReasonable * results[1].mean;
+    return roundXDigits(nReasonable * results[1].mean,2);
   };
 
   var filterPartial = function(results) {
