@@ -13,7 +13,7 @@ var initServer = function(input) {
   webServer.use('/api/', function(req,res) {
     console.log('asked API');
     Promise.resolve()
-    .then(application.serveAPI)
+    .then(_.throttle(application.serveAPI,THROTTLE_DURATION))
     .then(function(response) {
       res.send(response);
     })
@@ -24,7 +24,7 @@ var initServer = function(input) {
   webServer.use('/', function(req,res) {
     console.log('asked /');
     Promise.resolve()
-    .then(application.serveHTML)
+    .then(_.throttle(application.serveHTML,THROTTLE_DURATION))
     .then(function(response) {
       res.send(response);
     })
