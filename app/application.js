@@ -4,6 +4,7 @@ var template = require('./appTemplate');
 var marketAnalyser = require('./marketAnalyser');
 var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
+var parameters = require('../parameters'):
 
 var mergeToOneObject = function(list) {
  return _.reduce(list, function(memo,value) {return _.extend(memo,value);});
@@ -15,7 +16,7 @@ var getData = function() {
 	};
 
 	var takeTen = function(itemList) {
-		return _.take(itemList,100);
+		return _.take(itemList,parameters.limiter);
 	}
 
 	var analyseMarket = function(typeIdList) {
