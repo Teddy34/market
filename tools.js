@@ -1,14 +1,21 @@
-logResult = function(result) {
+function logResult(result) {
   console.log(result);
   return result;
 };
 
-logError = function(error){
+function logError(error){
   console.error(error.stack);
   return Promise.reject(error);
 };
 
+function setTimeoutPromised(duration) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {resolve()},duration);
+  });
+}
+
 module.exports = {
   logResult: logResult,
-  logError: logError
+  logError: logError,
+  setTimeoutPromised: setTimeoutPromised
 };

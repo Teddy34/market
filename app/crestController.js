@@ -109,7 +109,6 @@ var fetchRegionMarketUrlByName = function(strRegionName) {
   .then(findByNamePartial(strRegionName))
   .then(crestConnector.fetchPoint)
   .then(getMarketSellOrdersEndPoint)
-  .catch(logError);
 };
 
 fetchRegionMarketUrlById = function(regionId) {
@@ -118,7 +117,6 @@ fetchRegionMarketUrlById = function(regionId) {
   .then(findRegionByIdPartial(regionId))
   .then(crestConnector.fetchPoint)
   .then(getMarketSellOrdersEndPoint)
-  .catch(logError);
 };
 
 var fetchItemTypeUrl = function(itemNumber) {
@@ -131,7 +129,6 @@ var fetchItemTypeUrl = function(itemNumber) {
   .then(fetchItemList)
   .then(find)
   .then(getRefUrl)
-  .catch(logError);
 };
 
 var searchSystemInSystemList = function(name, systemList) {
@@ -237,7 +234,6 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   .then(fetchRegionMarketUrlByIdPartial)
   .then(addParameterToRegionMarketURL)
   .then(crestConnector.fetchPoint)
-  .catch(tools.logError);
 };
 
 module.exports = {

@@ -8,6 +8,25 @@ var options = {
   'Accept-Encoding': 'gzip'
 };
 
+// pool management
+var pool = [];
+
+var removeFromPool = function() {
+  if (pool.length) {
+    pool.shift()();
+  } 
+};
+
+var addToPool = function(url) {
+  var promise = new Promise(function(resolve, reject) {
+      pool.push(function(){resolve(url);});
+  });
+  //return the result of the call;
+  return promise.then(fetchPoint);
+};
+
+setInterval(removeFromPool, 200);
+
 function checkSuccess(response) {
   if (!response || !response.status) {
     return Promise.reject("Invalid response:",response);
@@ -40,8 +59,8 @@ var fetchPoint = function(element) {
   if (!url) {
     throw new Error("Wrong element to fetch:"+element.toSring());
   }
-  console.log("fetching ", url);
-  return fetch(url, options)
+  console.log("fetching ",url );
+  return fetch(url,options)
   .then(checkSuccess)
   .then(fromJSON)
   .catch(tools.logError);
@@ -57,7 +76,7 @@ function fetchList(queryResult) {
 
   if (items && queryResult.next) {
     // fetch next page instead and agregate;
-    return fetchPoint(queryResult.next)
+    return addToPool(queryResult.next)
       .then(concatItems)
       .then(fetchList);
   }
@@ -66,5 +85,5 @@ function fetchList(queryResult) {
 
 module.exports = {
   fetchList: fetchList,
-  fetchPoint: fetchPoint
+  fetchPoint: addToPool
 };
