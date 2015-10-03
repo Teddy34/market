@@ -6,6 +6,9 @@ var THROTTLE_DURATION = 5 * 60 * 1000;
 
 var webServer;
 
+var serveAPI = _.throttle(application.serveAPI,THROTTLE_DURATION);
+var serveHTML = _.throttle(application.serveHTML,THROTTLE_DURATION);
+
 
 var initServer = function(input) {
   // create the webserver
@@ -13,7 +16,7 @@ var initServer = function(input) {
   webServer.use('/api/', function(req,res) {
     console.log('asked API');
     Promise.resolve()
-    .then(_.throttle(application.serveAPI,THROTTLE_DURATION))
+    .then(serveAPI)
     .then(function(response) {
       res.send(response);
     })
@@ -24,7 +27,7 @@ var initServer = function(input) {
   webServer.use('/', function(req,res) {
     console.log('asked /');
     Promise.resolve()
-    .then(_.throttle(application.serveHTML,THROTTLE_DURATION))
+    .then(serveHTML)
     .then(function(response) {
       res.send(response);
     })
