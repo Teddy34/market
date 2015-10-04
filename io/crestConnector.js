@@ -25,7 +25,7 @@ var addToPool = function(url) {
   return promise.then(fetchPoint);
 };
 
-setInterval(removeFromPool, 105);
+setInterval(removeFromPool, 180);
 
 function checkSuccess(response) {
   if (!response || !response.status) {
@@ -40,7 +40,7 @@ function checkSuccess(response) {
     case 503: return Promise.reject(new Error("Server error. Is this downtime? Are you overloading the server?"));
   }
   
-  console.log("fetched with response", response.status);
+  //console.log("fetched with response", response.status);
   return (response);
 }
 
@@ -59,7 +59,7 @@ var fetchPoint = function(element) {
   if (!url) {
     throw new Error("Wrong element to fetch:"+element.toSring());
   }
-  console.log("fetching ",url );
+  //console.log("fetching ",url );
   return fetch(url,options)
   .then(checkSuccess)
   .then(fromJSON)

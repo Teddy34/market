@@ -15,6 +15,11 @@ var getLocationsFromSystemName = function(systemName) {
   .then(getRows);
 };
 
+var getItemIdByName = function(name) {
+	return sdeConnector.sendQueryWhenReady('SELECT "typeID" from "invTypes" WHERE "typeName" = \''+name+'\'')
+	.then(getRows);
+}
+
 function getRows(result) {
 	return result.rows;
 }
@@ -22,5 +27,6 @@ function getRows(result) {
 module.exports = {
   getSystemIDFromSystemName: getSystemIDFromSystemName,
   getLocationsFromSystemID: getLocationsFromSystemID,
-  getLocationsFromSystemName: getLocationsFromSystemName
+  getLocationsFromSystemName: getLocationsFromSystemName,
+  getItemIdByName: getItemIdByName
 };
