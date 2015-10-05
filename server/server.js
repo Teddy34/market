@@ -8,13 +8,27 @@ var webServer;
 
 var serveAPI = _.throttle(application.serveAPI,THROTTLE_DURATION);
 var serveHTML = _.throttle(application.serveHTML,THROTTLE_DURATION);
+var serveShipsHTML = _.throttle(application.serveShipsHTML,THROTTLE_DURATION);
+var serveSmallItemsHTML = _.throttle(application.serveSmallItemsHTML,THROTTLE_DURATION);
 
+var getHTMLMiddleware = function(serveFunc) {
+  return function(req,res) {
+    Promise.resolve()
+    .then(serveFunc)
+    .then(function(response) {
+      res.send(response);
+    })
+    .catch(function(error) {
+      if (error && error.stack) {console.log(error.stack)};
+      res.send({error:error});
+    });
+  }
+}
 
 var initServer = function(input) {
   // create the webserver
   webServer = express();
   webServer.use('/api/', function(req,res) {
-    console.log('asked API');
     Promise.resolve()
     .then(serveAPI)
     .then(function(response) {
@@ -24,18 +38,9 @@ var initServer = function(input) {
       res.send({error:error});
     });
   });
-  webServer.use('/', function(req,res) {
-    console.log('asked /');
-    Promise.resolve()
-    .then(serveHTML)
-    .then(function(response) {
-      res.send(response);
-    })
-    .catch(function(error) {
-      if (error && error.stack) {console.log(error.stack)};
-      res.send({error:error});
-    });
-  });
+  webServer.use('/ships/', getHTMLMiddleware(serveShipsHTML));
+  webServer.use('/small', getHTMLMiddleware(serveSmallItemsHTML));
+  webServer.use('/', getHTMLMiddleware(serveHTML));
   return input;
 };
 

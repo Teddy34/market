@@ -1,6 +1,7 @@
 var fetch = require('node-fetch');
 var _ = require('lodash');
 var tools = require('../tools');
+var parameters = require('../parameters');
 
 var options = {
   'Accept': 'application/json',
@@ -10,6 +11,7 @@ var options = {
 
 // pool management
 var pool = [];
+var lastRequest = Date.now();
 
 var removeFromPool = function() {
   if (pool.length) {
@@ -25,7 +27,7 @@ var addToPool = function(url) {
   return promise.then(fetchPoint);
 };
 
-setInterval(removeFromPool, 180);
+setInterval(removeFromPool, parameters.crestDelay);
 
 function checkSuccess(response) {
   if (!response || !response.status) {
@@ -50,6 +52,7 @@ function fromJSON(response) {
 
 var fetchPoint = function(element) {
   var url = null;
+
   if (_.isObject(element) && element.href) {
     url = element.href;
   }
@@ -59,6 +62,11 @@ var fetchPoint = function(element) {
   if (!url) {
     throw new Error("Wrong element to fetch:"+element.toSring());
   }
+
+  var now = Date.now();
+  console.log("time since last request:", now - lastRequest, "fetching:", url );
+  lastRequest = now;
+  
   //console.log("fetching ",url );
   return fetch(url,options)
   .then(checkSuccess)

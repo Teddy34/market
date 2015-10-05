@@ -111,13 +111,13 @@ var fetchRegionMarketUrlByName = function(strRegionName) {
   .then(getMarketSellOrdersEndPoint)
 };
 
-fetchRegionMarketUrlById = function(regionId) {
+fetchRegionMarketUrlById = _.memoize(function(regionId) {
   return Promise.resolve()
   .then(getRegionList)
   .then(findRegionByIdPartial(regionId))
   .then(crestConnector.fetchPoint)
   .then(getMarketSellOrdersEndPoint)
-};
+});
 
 var fetchItemTypeUrl = function(itemNumber) {
 
