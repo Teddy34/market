@@ -4,7 +4,7 @@ var template = require('./appTemplate');
 var marketAnalyser = require('./marketAnalyser');
 var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
-var limiter = require('../parameters').limiter;
+var parameters = require('../parameters');
 
 function logCount(list) {
 	console.log(list.length, 'items');
@@ -21,11 +21,11 @@ var getItemIdList = function(itemList) {
 
 var parseData = function(itemList) {
 	var analyseMarket = function(typeIdList) {
-		return marketAnalyser.getMultipleStocksAtReasonablePrice(typeIdList, 'Fliet', 1.15)
+		return marketAnalyser.getMultipleStocksAtReasonablePrice(typeIdList, 'Fliet', parameters.priceTresholdMultiplier);
 	};
 
 	var splitData = function(itemList) {
-		var marketPromise = Promise.resolve(itemList).then(getItemIdList).then(analyseMarket)
+		var marketPromise = Promise.resolve(itemList).then(getItemIdList).then(analyseMarket);
 		return Promise.all([itemList, marketPromise]);
 	};
 
@@ -40,7 +40,7 @@ var parseData = function(itemList) {
 
 var getAllTypesLimited = function() {
 	var take = function(itemList) {
-		return _.take(itemList,limiter);
+		return _.take(itemList,parameters.limiter);
 	};
 
 	return primalistConnector.fetch().then(take).then(parseData);
@@ -48,14 +48,14 @@ var getAllTypesLimited = function() {
 
 var getShips = function() {
 	var filterShips = function(itemList) {
-		return _.filter(itemList, function(item) {return item.volume > 1000});
+		return _.filter(itemList, function(item) {return item.volume > parameters.minBigItemSize;});
 	};
 	return primalistConnector.fetch().then(filterShips).then(parseData);
 };
 
 var getSmallItems = function() {
 	var filterSmallItems = function(itemList) {
-		return _.filter(itemList, function(item) {return item.volume >= 1 && item.volume <=50});
+		return _.filter(itemList, function(item) {return item.volume <= parameters.maxSmallItemSize;});
 	};
 	return primalistConnector.fetch().then(filterSmallItems).then(logCount).then(parseData);
 };
@@ -67,11 +67,6 @@ var getRenderedTemplate = function(data) {
 };
 
 // exposed primitives to get results
-
-var serveSample = function () {
-	return marketAnalyser.getMultipleStocksAtReasonablePrice([448, 3017, 2048, 4025], 'Fliet', 1.15)
-	.catch(tools.logError);
-};
 
 var serveAPI = function () {
 	return getAllTypesLimited()
@@ -97,7 +92,6 @@ var serveSmallItemsHTML = function() {
 };
 
 module.exports = {
-	serveSample: serveSample,
 	serveAPI: serveAPI,
 	serveHTML: serveHTML,
 	serveShipsHTML: serveShipsHTML,
