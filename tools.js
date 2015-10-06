@@ -16,13 +16,13 @@ function setTimeoutPromised(duration) {
   });
 }
 
-function cacheFunction(myFuncToCache, cacheDuration, context) {
+function cacheFunction(myFuncToCache, cacheDuration, hashFunction, context) {
   // we need to return a different throttled function for each different parameters so memoize it
   var memoizedFunction = _.memoize(function() {
     var myFuncToCacheArguments = arguments;
     var throttledFunc = _.throttle(myFuncToCache, cacheDuration, {trailing: false});
     return function executeThrottledFunction() {return throttledFunc.apply(null, myFuncToCacheArguments);};
-  });
+  }, hashFunction);
 
   return function applyMemoizedFunction() {
     // apply the throttled function
@@ -30,9 +30,32 @@ function cacheFunction(myFuncToCache, cacheDuration, context) {
   };
 }
 
+function promisedThrottle(func, duration) {
+  // pool management
+  var pool = [];
+
+  var removeFromPool = function() {
+    if (pool.length) {
+      pool.shift()();
+    }
+  };
+
+  var addToPool = function(input) {
+    var promise = new Promise(function(resolve, reject) {
+        pool.push(function(){resolve(input);});
+    });
+    //return the result of the call;
+    return promise.then(func);
+  };
+
+  setInterval(removeFromPool, duration);
+  return addToPool;
+}
+
 module.exports = {
   logResult: logResult,
   logError: logError,
   setTimeoutPromised: setTimeoutPromised,
-  cacheFunction: cacheFunction
+  cacheFunction: cacheFunction,
+  promisedThrottle: promisedThrottle
 };

@@ -7,4 +7,5 @@ module.exports = {
   minBigItemSize: process.env.MIN_BIG_ITEM_SIZE || 200,
   limiter: process.env.LIMITER || 5,
   crestDelay: process.env.CREST_DELAY || 200,
+  eveCentralApiUrl: process.env.EVECENTRAL_API_URL || 'http://api.eve-central.com/api/marketstat/json'
 };

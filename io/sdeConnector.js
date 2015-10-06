@@ -9,7 +9,7 @@ var connect = _.once(function() {
   return clientConnected = new Promise(function(resolve, reject) {
       pg.connect(parameters.sdeConnectionString, function(err, client, done) {
       if(err) {
-        console.error('Error unable to connect to database:', err)
+        console.error('Error unable to connect to database:', err);
         reject(err);
       }
       else {

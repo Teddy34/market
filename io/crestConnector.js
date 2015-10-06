@@ -10,24 +10,7 @@ var options = {
 };
 
 // pool management
-var pool = [];
 var lastRequest = Date.now();
-
-var removeFromPool = function() {
-  if (pool.length) {
-    pool.shift()();
-  } 
-};
-
-var addToPool = function(url) {
-  var promise = new Promise(function(resolve, reject) {
-      pool.push(function(){resolve(url);});
-  });
-  //return the result of the call;
-  return promise.then(fetchPoint);
-};
-
-setInterval(removeFromPool, parameters.crestDelay);
 
 function checkSuccess(response) {
   if (!response || !response.status) {
@@ -84,14 +67,16 @@ function fetchList(queryResult) {
 
   if (items && queryResult.next) {
     // fetch next page instead and agregate;
-    return addToPool(queryResult.next)
+    return throttledFetchPoint(queryResult.next)
       .then(concatItems)
       .then(fetchList);
   }
   return queryResult.items;
 }
 
+var throttledFetchPoint = tools.promisedThrottle(fetchPoint, parameters.crestDelay);
+
 module.exports = {
   fetchList: fetchList,
-  fetchPoint: addToPool
+  fetchPoint: throttledFetchPoint
 };
