@@ -4,6 +4,7 @@ var _ = require('lodash');
 
 var crest = require('./crestController');
 var sde = require('./sdeController');
+var eveCentral = require('./eveCentralController');
 
 var getStationIDList = function(systemList) {
   return _.pluck(systemList, 'stationID');
@@ -31,6 +32,19 @@ var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   .then(getMarketSellOrders);
 };
 
+var fetchMarketSummaryByTypeAndSystemName = function(typeId, systemName) {
+
+  var decoratePartial = function(systemId) {
+    return {typeId:typeId, systemId:systemId};
+  };
+
+  return Promise.resolve(systemName)
+  .then(sde.getSystemIDFromSystemName)
+  .then(decoratePartial)
+  .then(eveCentral.fetchMarketSummaryByTypeAndSystemName);
+};
+
 module.exports = {
-  fetchMarketSellByTypeAndSystemName: fetchMarketSellByTypeAndSystemName
+  fetchMarketSellByTypeAndSystemName: fetchMarketSellByTypeAndSystemName,
+  fetchMarketSummaryByTypeAndSystemName: fetchMarketSummaryByTypeAndSystemName
 };

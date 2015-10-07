@@ -3,7 +3,21 @@
 var sdeConnector = require('../io/sdeConnector');
 
 var getSystemIDFromSystemName = function(systemName) {
-  return sdeConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName" FROM "mapSolarSystems" AS "s" WHERE "solarSystemName" = \''+systemName+'\'');
+  // should have 0 or 1 answer
+
+  function parse(resultList) {
+    if (resultList.length === 0) {
+      throw new Error('System not found');
+    }
+    if (resultList.length > 1) {
+      throw new Error('Unexpexted number of systems ('+ resultList.length+ ') found with name'+systemName);
+    }
+    return resultList.shift().solarSystemID;
+  }
+
+  return sdeConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName" FROM "mapSolarSystems" AS "s" WHERE "solarSystemName" = \''+systemName+'\'')
+  .then(getRows)
+  .then(parse);
 };
 
 var getLocationsFromSystemID = function(systemID) {
@@ -18,7 +32,7 @@ var getLocationsFromSystemName = function(systemName) {
 var getItemIdByName = function(name) {
 	return sdeConnector.sendQueryWhenReady('SELECT "typeID" from "invTypes" WHERE "typeName" = \''+name+'\'')
 	.then(getRows);
-}
+};
 
 function getRows(result) {
 	return result.rows;
