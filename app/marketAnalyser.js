@@ -104,6 +104,33 @@ var reduceVolume = function(memo, order) {
   return memo += order.volume;
 };
 
+// using another way to get reference
+var summariesParser = function(summaries) {
+  return _.map(summaries, function(summary){
+    return {
+      mean: summary.all.avg,
+      weightedMean: summary.all.wavg,
+      minSell: summary.sell.min,
+      buyMax: summary.buy.max
+    };
+  });
+};
+
+var getPriceReferenceFromSummary = function(itemId) {
+  return marketData.fetchMarketSummaryByTypeAndSystemName(itemId, 'Dodixie')
+  .then(summariesParser);
+};
+
+var getReferencePriceListAndSellOrderList = function(typeIdList, systemName) {
+  var priceRefenceList = getPriceReferenceFromSummary(typeIdList);
+  var systemSellOrders = marketData.fetchMarketSellByTypeAndSystemName(itemId, systemName);
+
+  return Promise.all(priceRefenceList,systemSellOrders);
+};
+
+
+
+// exposed primitives
 getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonablePrice) {
 
   var partial = function(typeId) {
@@ -114,5 +141,6 @@ getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonable
 };
 
 module.exports = {
-  getMultipleStocksAtReasonablePrice: getMultipleStocksAtReasonablePrice
+  getMultipleStocksAtReasonablePrice: getMultipleStocksAtReasonablePrice,
+  getPriceReferenceFromSummary: getPriceReferenceFromSummary
 };

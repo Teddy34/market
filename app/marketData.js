@@ -32,8 +32,9 @@ var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   .then(getMarketSellOrders);
 };
 
+//accept also arrays
 var fetchMarketSummaryByTypeAndSystemName = function(typeId, systemName) {
-
+  console.log("fetchMarketSummaryByTypeAndSystemName",typeId, systemName);
   var decoratePartial = function(systemId) {
     return {typeId:typeId, systemId:systemId};
   };
