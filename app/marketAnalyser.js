@@ -51,7 +51,12 @@ var mergeThreeLists = function (lists) {
 };
 
 var finalDecorator = function(itemList) {
-  return _.map(itemList, function(item) {return _.omit(item, ["orders", "price"]);});
+  return _(itemList).map(function(item) {
+    item.reasonablePrice = roundXDigits(item.price * parameters.priceRecommandedMultiplier,2);
+    item.hubData = {mean:item.price};
+    return item;
+  })
+  .map(function(item) {return _.omit(item, ["orders", "price"]);}).value();
 };
 
 // primitives

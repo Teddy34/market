@@ -17,7 +17,8 @@ var getItemIdList = function(itemList) {
 
 var parseData = function(itemList) {
 	var analyseMarket = function(typeIdList) {
-		return marketAnalyser.getMultipleStocksAtReasonablePrice(typeIdList, 'Fliet', parameters.priceTresholdMultiplier);
+		//return marketAnalyser.getMultipleStocksAtReasonablePrice(typeIdList, 'Fliet', parameters.priceTresholdMultiplier);
+		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'Fliet')
 	};
 
 	var splitData = function(itemList) {
