@@ -1,6 +1,8 @@
 var _ = require('lodash');
 
 var marketData = require('./marketData');
+var tools = require('../tools');
+var parameters = require('../parameters');
 
 
 //Math Utilities
@@ -30,9 +32,28 @@ function doStatAnalysis(array) {
 
 // decorators;
 
-var decorateOrders = function(orders) {
-  return _(orders).map(function(order) {return {price: order.price, volume: order.volume};}).sortBy('price').value();
+var decorateSellOrder = function(order) {
+  return {
+    minPrice: order.price,
+    volume: order.volume
+  };
+}
+
+var decorateOrdersAndOrderByPrice = function(orders) {
+  return _(orders).map(decorateSellOrder).sortBy('price').value();
 };
+
+var mergeThreeLists = function (lists) {
+  var idList = _.map(lists[2], function(id) {return {typeId:id};});
+  // ideally we would want to have a merger of any number of list
+  console.log(_.zip(lists[0], lists[1], lists[2]));
+  //console.log(_(lists[0]).zip(lists[1],lists[2]).map(tools.mergeToOneObject).value());
+  return _(lists[0]).zip([lists[1],lists[2]]).map(tools.mergeToOneObject).value();
+}
+
+var finalDecorator = function(itemList) {
+  return _.map(itemList, function(item) {return _.omit(item, ["orders", "price"]);});
+}
 
 // primitives
 
@@ -54,7 +75,7 @@ var getPriceReference = function(itemId) {
   }
 
   return marketData.fetchMarketSellByTypeAndSystemName(itemId, 'Dodixie')
-  .then(decorateOrders)
+  .then(decorateOrdersAndOrderByPrice)
   .then(getAverageCheapestPricePartial(3))
   .then(decorate);
 };
@@ -121,14 +142,41 @@ var getPriceReferenceFromSummary = function(itemId) {
   .then(summariesParser);
 };
 
-var getReferencePriceListAndSellOrderList = function(typeIdList, systemName) {
-  var priceRefenceList = getPriceReferenceFromSummary(typeIdList);
-  var systemSellOrders = marketData.fetchMarketSellByTypeAndSystemName(itemId, systemName);
-
-  return Promise.all(priceRefenceList,systemSellOrders);
+var decoratorMethodTwo = function(itemAsArray) {
+  var item = itemAsArray[0];
+  item.orders = itemAsArray[1];
+  item.price = item.minSell; // a strategy of determining price
+  return item;
 };
 
+var getReferencePriceListAndSellOrderList = function(typeIdList, systemName) {
 
+  var getMultipleSellOrders = function(itemId) {
+    return marketData.fetchMarketSellByTypeAndSystemName(itemId, systemName)
+    //.then(function(orderList) {return _.map(orderList,decorateSellOrder);});
+  };
+
+  var priceRefenceList = getPriceReferenceFromSummary(typeIdList);
+  var systemSellOrders = Promise.all(_.map(typeIdList, getMultipleSellOrders));
+
+  return Promise.all([priceRefenceList, systemSellOrders, typeIdList])
+  .then(mergeThreeLists)
+  .then(function(itemList){return _.map(itemList,decoratorMethodTwo)});
+};
+
+var reduceSoldVolumeUnderTresholdPrice = function(item) {
+  var maxPrice = parameters.priceTresholdMultiplier*item.price;
+
+  item.volumeAvailable = _.reduce(filterOrdersByPriceTreshold(item.orders , parameters.priceTresholdMultiplier*item.price),reduceVolume,0);
+  
+  return item;
+};
+
+var getAnalysedItemListBySystemName = function(typeIdList, systemName) {
+  return getReferencePriceListAndSellOrderList(typeIdList,systemName)
+  .then(function(itemList) {return _.map(itemList,reduceSoldVolumeUnderTresholdPrice);})
+  .then(finalDecorator);
+};
 
 // exposed primitives
 getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonablePrice) {
@@ -142,5 +190,7 @@ getMultipleStocksAtReasonablePrice = function(typeIdList, systemName, reasonable
 
 module.exports = {
   getMultipleStocksAtReasonablePrice: getMultipleStocksAtReasonablePrice,
-  getPriceReferenceFromSummary: getPriceReferenceFromSummary
+  getPriceReferenceFromSummary: getPriceReferenceFromSummary,
+  getReferencePriceListAndSellOrderList: getReferencePriceListAndSellOrderList,
+  getAnalysedItemListBySystemName: getAnalysedItemListBySystemName
 };

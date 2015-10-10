@@ -52,10 +52,16 @@ function promisedThrottle(func, duration) {
   return addToPool;
 }
 
+function mergeToOneObject(list) {
+  console.log("mergeToOneObject", list);
+ return _.reduce(list, function(memo,value) {return _.extend(memo,value);});
+};
+
 module.exports = {
   logResult: logResult,
   logError: logError,
   setTimeoutPromised: setTimeoutPromised,
   cacheFunction: cacheFunction,
-  promisedThrottle: promisedThrottle
+  promisedThrottle: promisedThrottle,
+  mergeToOneObject: mergeToOneObject
 };

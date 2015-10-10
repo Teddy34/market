@@ -11,10 +11,6 @@ function logCount(list) {
 	return list;
 }
 
-var mergeToOneObject = function(list) {
- return _.reduce(list, function(memo,value) {return _.extend(memo,value);});
-};
-
 var getItemIdList = function(itemList) {
 	return _.pluck(itemList, 'typeID');
 };
@@ -30,7 +26,7 @@ var parseData = function(itemList) {
 	};
 
 	var mergeData = function(resultList) {
-		return _(resultList[0]).zip(resultList[1]).map(mergeToOneObject).value();
+		return _(resultList[0]).zip(resultList[1]).map(tools.mergeToOneObject).value();
 	};
 
 	return Promise.resolve(itemList).then(splitData).then(mergeData);
