@@ -215,6 +215,10 @@ var searchSystemInRegionList = function(name, regionList) {
   .then(findSystemOrIterate);
 };
 
+var getfetchMarketSellByRegionIdAndTypeHash = function(regionId, type) {
+  return "" + regionId + type;
+}
+
 var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   var itemTypeURL;
   var storeTypeURL = function storeTypeURL (url) {
@@ -238,5 +242,5 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
 };
 
 module.exports = {
-  fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, eveCentralCacheDuration)
+  fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, eveCentralCacheDuration, getfetchMarketSellByRegionIdAndTypeHash)
 };

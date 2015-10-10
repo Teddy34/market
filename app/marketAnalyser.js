@@ -165,7 +165,6 @@ var getReferencePriceListAndSellOrderList = function(typeIdList, systemName) {
 
 var reduceSoldVolumeUnderTresholdPrice = function(item) {
   var maxPrice = parameters.priceTresholdMultiplier*item.price;
-
   item.volumeAvailable = _.reduce(filterOrdersByPriceTreshold(item.orders , parameters.priceTresholdMultiplier*item.price),reduceVolume,0);
   
   return item;
