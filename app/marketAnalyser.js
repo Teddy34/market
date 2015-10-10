@@ -45,15 +45,14 @@ var decorateOrdersAndOrderByPrice = function(orders) {
 
 var mergeThreeLists = function (lists) {
   var idList = _.map(lists[2], function(id) {return {typeId:id};});
+  var orderListInObject = _.map(lists[1], function(orderList) {return {orders:orderList};});
   // ideally we would want to have a merger of any number of list
-  console.log(_.zip(lists[0], lists[1], lists[2]));
-  //console.log(_(lists[0]).zip(lists[1],lists[2]).map(tools.mergeToOneObject).value());
-  return _(lists[0]).zip([lists[1],lists[2]]).map(tools.mergeToOneObject).value();
-}
+  return _(lists[0]).zip(orderListInObject,idList).map(tools.mergeToOneObject).value();
+};
 
 var finalDecorator = function(itemList) {
   return _.map(itemList, function(item) {return _.omit(item, ["orders", "price"]);});
-}
+};
 
 // primitives
 
@@ -142,10 +141,10 @@ var getPriceReferenceFromSummary = function(itemId) {
   .then(summariesParser);
 };
 
-var decoratorMethodTwo = function(itemAsArray) {
-  var item = itemAsArray[0];
-  item.orders = itemAsArray[1];
+var decoratorMethodTwo = function(item) {
   item.price = item.minSell; // a strategy of determining price
+  item.mean = roundXDigits(item.mean,2);
+  item.weightedMean = roundXDigits(item.weightedMean,2);
   return item;
 };
 

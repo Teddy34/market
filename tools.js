@@ -53,7 +53,6 @@ function promisedThrottle(func, duration) {
 }
 
 function mergeToOneObject(list) {
-  console.log("mergeToOneObject", list);
  return _.reduce(list, function(memo,value) {return _.extend(memo,value);});
 };
 
