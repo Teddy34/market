@@ -6,8 +6,8 @@ var THROTTLE_DURATION = 5 * 60 * 1000;
 
 var webServer;
 
-var serveAPI = _.throttle(application.serveAPI,THROTTLE_DURATION);
-var serveHTML = _.throttle(application.serveHTML,THROTTLE_DURATION);
+var serveAPI = application.serveAPI,THROTTLE_DURATION;
+var serveHTML = application.serveHTML,THROTTLE_DURATION;
 var serveShipsHTML = _.throttle(application.serveShipsHTML,THROTTLE_DURATION);
 var serveSmallItemsHTML = _.throttle(application.serveSmallItemsHTML,THROTTLE_DURATION);
 

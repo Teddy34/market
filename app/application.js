@@ -24,7 +24,6 @@ var getItemIdList = function(itemList) {
 
 var parseData = function(itemList) {
 	var analyseMarket = function(typeIdList) {
-		//return marketAnalyser.getMultipleStocksAtReasonablePrice(typeIdList, 'Fliet', parameters.priceTresholdMultiplier);
 		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'Fliet')
 	};
 
@@ -64,6 +63,21 @@ var getSmallItems = function() {
 	return primalistConnector.fetch().then(filterSmallItems).then(logCount).then(parseData);
 };
 
+onDataReceived = function(results) {
+	storedData.all = {
+		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID}),
+		timestamp: Date.now()
+	}
+}
+
+var updateData = function() {
+	getAllTypesLimited()
+	.then(onDataReceived)
+};
+
+setInterval(updateData,parameters.appUpdateInterval);
+updateData();
+
 // templating
 
 var getRenderedTemplate = function(data) {
@@ -73,14 +87,15 @@ var getRenderedTemplate = function(data) {
 // exposed primitives to get results
 
 var serveAPI = function () {
-	return getAllTypesLimited()
-	.catch(tools.logError);
+	return storedData.all || {};
 };
 
 var serveHTML = function () {
-	return getAllTypesLimited()
-	.then(getRenderedTemplate)
-	.catch(tools.logError);
+	if (storedData.all) {
+		console.log("displaying data recieved at", storedData.all.timestamp);
+		return getRenderedTemplate(storedData.all.data);
+	}
+	return "no data available";
 };
 
 var serveShipsHTML = function() {

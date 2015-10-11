@@ -35,17 +35,14 @@ function fromJSON(response) {
 }
 
 var retry = function(error, url) {
-  console.log(retryList);
   var index = retryList.indexOf(url);
   if (index >=0) {
-    console.log("already retried");
     removingRetry(index);
     throw error;
   }
   retryList.push(url);
 
   function removingRetry(optionalIndex) {
-    console.log("removing:",optionalIndex);
     retryList.splice(optionalIndex!== undefined?optionalIndex:retryList.indexOf(url),1);
   }
 

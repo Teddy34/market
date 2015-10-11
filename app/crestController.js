@@ -5,7 +5,7 @@ var _ = require('lodash');
 var tools = require('../tools');
 var crestConnector = require('../io/crestConnector');
 var crestEndPoint = require('../parameters').crestEndPoint;
-var eveCentralCacheDuration = require('../parameters').eveCentralCacheDuration;
+var crestCacheDuration = require('../parameters').crestCacheDuration;
 
 // search utilities
 function containsId(strToSearch, strKeyword, strID) {
@@ -242,5 +242,5 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
 };
 
 module.exports = {
-  fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, eveCentralCacheDuration, getfetchMarketSellByRegionIdAndTypeHash)
+  fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, crestCacheDuration, getfetchMarketSellByRegionIdAndTypeHash)
 };
