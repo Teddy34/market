@@ -11,6 +11,7 @@ var options = {
 
 // pool management
 var lastRequest = Date.now();
+var retryList = [];
 
 function checkSuccess(response) {
   if (!response || !response.status) {
@@ -33,6 +34,30 @@ function fromJSON(response) {
   return response.json();
 }
 
+var retry = function(error, url) {
+  console.log(retryList);
+  var index = retryList.indexOf(url);
+  if (index >=0) {
+    console.log("already retried");
+    removingRetry(index);
+    throw error;
+  }
+  retryList.push(url);
+
+  function removingRetry(optionalIndex) {
+    console.log("removing:",optionalIndex);
+    retryList.splice(optionalIndex!== undefined?optionalIndex:retryList.indexOf(url),1);
+  }
+
+  function handleRetrySuccess(result) {
+    removingRetry();
+    return result;
+  }
+
+  return throttledFetchPoint(url)
+  .then(handleRetrySuccess);
+};
+
 var fetchPoint = function(element) {
   var url = null;
 
@@ -49,12 +74,18 @@ var fetchPoint = function(element) {
   var now = Date.now();
   console.log("time since last request:", now - lastRequest, "fetching:", url );
   lastRequest = now;
+
+  var retryPartial = function(error) {
+    console.log("retrying ",url);
+    return retry(error, url);
+  };
   
   //console.log("fetching ",url );
   return fetch(url,options)
   .then(checkSuccess)
   .then(fromJSON)
-  .catch(tools.logError);
+  .catch(tools.logError)
+  .catch(retryPartial);
 };
 
 function fetchList(queryResult) {

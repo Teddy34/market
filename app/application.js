@@ -6,6 +6,13 @@ var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
 var parameters = require('../parameters');
 
+// stored result from different calls
+var storedData = {
+	all: null,
+	small: null,
+	ships: null
+};
+
 function logCount(list) {
 	console.log(list.length, 'items');
 	return list;
