@@ -24,7 +24,7 @@ var getItemIdList = function(itemList) {
 
 var parseData = function(itemList) {
 	var analyseMarket = function(typeIdList) {
-		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'Fliet')
+		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'Fliet');
 	};
 
 	var splitData = function(itemList) {
@@ -65,14 +65,15 @@ var getSmallItems = function() {
 
 onDataReceived = function(results) {
 	storedData.all = {
-		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID}),
+		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
 		timestamp: Date.now()
-	}
-}
+	};
+};
 
 var updateData = function() {
 	getAllTypesLimited()
 	.then(onDataReceived)
+	.catch(tools.logError);
 };
 
 setInterval(updateData,parameters.appUpdateInterval);

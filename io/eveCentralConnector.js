@@ -12,13 +12,22 @@ var lastRequest = Date.now();
 
 // data = {typeId, systemId}
 var doFetch = function(data) {
-  var url = parameters.eveCentralApiUrl + '?typeid=' + data.typeId + '&usesystem=' + data.systemId;
+  var url = parameters.eveCentralApiUrl;
+  var body = 'typeid='+data.typeId+'&usesystem='+data.systemId;
+  var options = {
+    method: 'post',
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": body.length
+    },
+    body:'typeid='+data.typeId+'&usesystem='+data.systemId
+  };
 
   var now = Date.now();
   console.log("time since last request:", now - lastRequest, "fetching:", url );
   lastRequest = now;
   
-  return fetch(url)
+  return fetch(url,options)
   .then(fromJSON);
 };
 
