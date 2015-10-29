@@ -6,6 +6,12 @@ var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
 var parameters = require('../parameters');
 
+function filterList(itemList) {
+	return _.filter(itemList, function(item) {
+		return (parameters.filteredItemList.indexOf(""+ item.typeID) === -1);
+	});
+}
+
 // stored result from different calls
 var storedData = {
 	all: null,
@@ -47,7 +53,7 @@ var getAllTypesLimited = function() {
 		return _.take(itemList,parameters.limiter);
 	};
 
-	return primalistConnector.fetch().then(take).then(parseData);
+	return primalistConnector.fetch().then(filterList).then(take).then(parseData);
 };
 
 var getShips = function() {

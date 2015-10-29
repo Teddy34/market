@@ -3,6 +3,20 @@ var _ = require('lodash');
 var tools = require('../tools');
 var parameters = require('../parameters');
 
+function checkSuccess(response) {
+  if (!response || !response.status) {
+    return Promise.reject("Invalid response:",response);
+  }
+
+  if (response.status !== 200) {
+    response.text().then(tools.logResult);
+    throw new Error("eve central replied: "+ response.status);
+  }
+  
+  //console.log("fetched with response", response.status);
+  return (response);
+}
+
 function fromJSON(response) {
   return response.json();
 }
@@ -28,6 +42,7 @@ var doFetch = function(data) {
   lastRequest = now;
   
   return fetch(url,options)
+  .then(checkSuccess)
   .then(fromJSON);
 };
 

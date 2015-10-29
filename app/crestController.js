@@ -217,7 +217,7 @@ var searchSystemInRegionList = function(name, regionList) {
 
 var getfetchMarketSellByRegionIdAndTypeHash = function(regionId, type) {
   return "" + regionId + type;
-}
+};
 
 var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   var itemTypeURL;
