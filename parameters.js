@@ -3,7 +3,7 @@ module.exports = {
   sdeConnectionString: process.env.DB_CONNECTION_STRING || require('./databaseCredentials'),
   crestEndPoint: process.env.CREST_END_POINT || 'https://public-crest.eveonline.com/',
   crestCacheDuration: process.env.CREST_CACHE_DURATION || (20*60*1000),
-  primalistURL: process.env.PRIMALIST_URL || 'http://primalist.herokuapp.com/api/',
+  primalistURL: process.env.PRIMALIST_URL || 'http://flietmarket.herokuapp.com/api/',
   priceTresholdMultiplier: process.env.PRICE_TRESHOLD_MULTIPLIER || 1.18,
   priceRecommandedMultiplier: process.env.PRICE_TRESHOLD_MULTIPLIER || 1.15,
   maxSmallItemSize: process.env.MAX_ITEM_SIZE || 200,

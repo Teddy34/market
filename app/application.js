@@ -23,6 +23,7 @@ var getItemIdList = function(itemList) {
 };
 
 var parseData = function(itemList) {
+	console.log('Analysing:',itemList.length, 'items');
 	var analyseMarket = function(typeIdList) {
 		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'Fliet');
 	};
@@ -64,9 +65,11 @@ var getSmallItems = function() {
 };
 
 onDataReceived = function(results) {
+	var now = Date.now();
+	console.log("Data updated at",now);
 	storedData.all = {
 		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
-		timestamp: Date.now()
+		timestamp: now
 	};
 };
 

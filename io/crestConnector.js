@@ -88,7 +88,7 @@ var fetchPoint = function(element) {
 function fetchList(queryResult) {
   var items = queryResult.items;
 
-  console.log("fetching",items.length,"items from crest");
+  //console.log("fetching",items.length,"items from crest");
 
   var concatItems = function(newQueryResult) {
     newQueryResult.items = newQueryResult.items.concat(items);
