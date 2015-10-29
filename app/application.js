@@ -91,7 +91,7 @@ updateData();
 // templating
 
 var getRenderedTemplate = function(data) {
-	return template({items:data});
+	return template({items:data, appUrl:parameters.appUrl});
 };
 
 // exposed primitives to get results

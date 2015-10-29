@@ -14,5 +14,6 @@ module.exports = {
   eveCentralCacheDuration: process.env.EVECENTRAL_CACHE_DURATION || (60*60*1000),
   eveCentralChunk: process.env.EVECENTRAL_CHUNK || 200,
   eveCentralDelay: process.env.EVECENTRAL_DELAY || 400,
-  filteredItemList: (process.env.FILTEREDITEMLIST || "36913").split(',')
+  filteredItemList: (process.env.FILTEREDITEMLIST || '36913').split(','),
+  appUrl: process.env.APP_URL || 'http://localhost:8080'
 };
