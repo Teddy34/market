@@ -69,7 +69,7 @@ var fetchPoint = function(element) {
   }
 
   var now = Date.now();
-  console.log("time since last request:", now - lastRequest, "fetching:", url );
+  //console.log("time since last request:", now - lastRequest, "fetching:", url );
   lastRequest = now;
 
   var retryPartial = function(error) {
@@ -87,6 +87,8 @@ var fetchPoint = function(element) {
 
 function fetchList(queryResult) {
   var items = queryResult.items;
+
+  console.log("fetching",items.length,"items from crest");
 
   var concatItems = function(newQueryResult) {
     newQueryResult.items = newQueryResult.items.concat(items);

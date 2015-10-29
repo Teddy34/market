@@ -24,14 +24,28 @@ var doFetch = function(data) {
   };
 
   var now = Date.now();
-  console.log("time since last request:", now - lastRequest, "fetching:", url );
+  console.log("time since last request:", now - lastRequest, "fetching:", data.typeId.length, "items at",url );
   lastRequest = now;
   
   return fetch(url,options)
   .then(fromJSON);
 };
 
-var throttledDoFetch = tools.promisedThrottle(doFetch, parameters.crestDelay);
+var chunkRequest = function(data) {
+
+  var fetchChunk = function(typeIdChunked) {
+    return doFetch({systemId: data.systemId, typeId:typeIdChunked});
+  };
+
+  var flattener = function(chunkedResults) {
+    return _.flatten(chunkedResults,true);
+  };
+
+  return Promise.all(_(data.typeId).chunk(parameters.eveCentralChunk).map(fetchChunk).value())
+  .then(flattener);
+};
+
+var throttledDoFetch = tools.promisedThrottle(chunkRequest, parameters.crestDelay);
 
 module.exports = {
   fetch: throttledDoFetch
