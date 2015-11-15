@@ -5,6 +5,7 @@ var marketAnalyser = require('./marketAnalyser');
 var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
 var parameters = require('../parameters');
+var storageConnector = require('../io/storageConnector');
 
 function filterList(itemList) {
 	return _.filter(itemList, function(item) {
@@ -70,20 +71,28 @@ var getSmallItems = function() {
 	return primalistConnector.fetch().then(filterSmallItems).then(logCount).then(parseData);
 };
 
-onDataReceived = function(results) {
+storeData = function(results) {
 	var now = Date.now();
-	console.log("Data updated at",now);
+	console.log("Data updated at", now);
 	storedData.all = {
 		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
 		timestamp: now
 	};
+	storageConnector.save(storedData.all);
 };
 
 var updateData = function() {
 	getAllTypesLimited()
-	.then(onDataReceived)
+	.then(storeData)
 	.catch(tools.logError);
 };
+
+var getLastData = function() {
+	return Promise.resolve()
+	.then(function() {return storageConnector.getLast();})
+	.catch(tools.logError)
+	.catch(function() {return storedData.all;});
+}
 
 setInterval(updateData,parameters.appUpdateInterval);
 updateData();
@@ -97,15 +106,15 @@ var getRenderedTemplate = function(data) {
 // exposed primitives to get results
 
 var serveAPI = function () {
-	return storedData.all || {};
+	return getLastData();
 };
 
 var serveHTML = function () {
-	if (storedData.all) {
-		console.log("displaying data recieved at", storedData.all.timestamp);
-		return getRenderedTemplate(storedData.all.data);
-	}
-	return "no data available";
+	return Promise.resolve()
+	.then(getLastData)
+	.then(function(result) {return result.data;})
+	.then(getRenderedTemplate)
+	.catch(function() {return "no data available";});
 };
 
 var serveShipsHTML = function() {

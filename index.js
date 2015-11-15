@@ -1,10 +1,9 @@
-var parameters = require('./');
+var parameters = require('./parameters');
 
 var tools = require('./tools');
 var sdeConnector = require('./io/sdeConnector');
 var marketAnalyser = require('./app/marketAnalyser');
-
-sdeConnector.connect();
+var storageConnector = require('./io/storageConnector');
 
 //getPriceReference(448)
 //predicate()
@@ -18,8 +17,8 @@ sdeConnector.connect();
 .then(logCount)
 .catch(logError);*/
 
-function connectDB() {
-  console.info("Database connecting");
+function connectSDE() {
+  console.info("SDE connecting");
   return sdeConnector.connect();
 }
 
@@ -29,18 +28,28 @@ function startWebServer() {
   return require('./server/server').start(process.env.PORT || 8080);
 }
 
+function connectStorage() {
+  console.info("Storage starting" );
+  return storageConnector.connect(parameters.storageConnectionString);
+}
+
 function logServiceStarting(result) {
-  console.info("Service starting");
+  console.info("Service started");
   return result;
 }
 
-function logDBStarting(result) {
-  console.info("Database starting");
+function logSDEStarted(result) {
+  console.info("SDE started");
   return result;
 }
 
 function logWebServerStarted(result) {
   console.info("WebServer started");
+  return result;
+}
+
+function logStorageStarted(result) {
+  console.info("Storage started");
   return result;
 }
 
@@ -55,8 +64,10 @@ function logError(error) {
 // startup workflow
 Promise.resolve()
   .then(logServiceStarting)
-  .then(connectDB)
-  .then(logDBStarting)
+  .then(connectSDE)
+  .then(logSDEStarted)
+  .then(connectStorage)
+  .then(logStorageStarted)
   .then(startWebServer)
   .then(logWebServerStarted)
   .catch(logError);
