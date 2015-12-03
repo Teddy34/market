@@ -25,7 +25,13 @@ var marketDataSchema = mongoose.Schema({
 
 var MarketData= mongoose.model('MarketData', marketDataSchema);
 
-var connect = function(connectionString) {
+var connectionString;
+
+var setConnectionString = function(newConnectionString) {
+	connectionString = newConnectionString;
+};
+
+var connect = function() {
 	return connectionPromise = new Promise(function(resolve, reject) {
 		mongoose.connect(connectionString, function(err) {
 	    	if (err) {
@@ -36,6 +42,18 @@ var connect = function(connectionString) {
 		}); // connect to our database
 	});
 };
+
+var disconnect = function() {
+	return connectionPromise = new Promise(function(resolve, reject) {
+		mongoose.disconnect(function(err) {
+	    	if (err) {
+	    		reject(err);
+	    	} else {
+	    		resolve();
+	    	}
+		}); // disconnect to our database
+	});
+}
 
 var save = function(marketData) {
 	var deferred = Promise.defer();
@@ -65,8 +83,19 @@ var getLast = function() {
 	return deferred.promise;
 };
 
+var wrapCommand = function(command) {
+	return function(data) {
+		var returnValue;
+		return Promise.resolve()
+		.then(connect)
+		.then(function() {return returnValue = command(data);})
+		.then(disconnect)
+		.then(function() {return returnValue;})
+	}
+};
+
 module.exports = {
-	connect:connect,
-	save:save,
-	getLast:getLast
+	setConnectionString:setConnectionString,
+	save: wrapCommand(save),
+	getLast: wrapCommand(getLast)
 };

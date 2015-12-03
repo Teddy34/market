@@ -28,9 +28,9 @@ function startWebServer() {
   return require('./server/server').start(process.env.PORT || 8080);
 }
 
-function connectStorage() {
+function initStorage() {
   console.info("Storage starting" );
-  return storageConnector.connect(parameters.storageConnectionString);
+  return storageConnector.setConnectionString(parameters.storageConnectionString);
 }
 
 function logServiceStarting(result) {
@@ -66,7 +66,7 @@ Promise.resolve()
   .then(logServiceStarting)
   .then(connectSDE)
   .then(logSDEStarted)
-  .then(connectStorage)
+  .then(initStorage)
   .then(logStorageStarted)
   .then(startWebServer)
   .then(logWebServerStarted)
