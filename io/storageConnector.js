@@ -3,22 +3,22 @@ var connectionPromise;
 
 var marketDataSchema = mongoose.Schema({
     data: [{
-		typeID:Number,
-		typeName:String,
-		groupID:Number,
-		volume:Number,
-		marketGroupID:Number,
-		quantity:Number,
-		mean:Number,
-		weightedMean:Number,
-		minSell:Number,
-		buyMax:Number,
-		typeId:Number,
-		volumeAvailable:Number,
-		reasonablePrice:Number,
-		hubData:{  
-			mean:Number
-		}
+			typeID:Number,
+			typeName:String,
+			groupID:Number,
+			volume:Number,
+			marketGroupID:Number,
+			quantity:Number,
+			mean:Number,
+			weightedMean:Number,
+			minSell:Number,
+			buyMax:Number,
+			typeId:Number,
+			volumeAvailable:Number,
+			reasonablePrice:Number,
+			hubData:{  
+				mean:Number
+			}
     }],
     timestamp: Date
 });
@@ -80,6 +80,12 @@ var clearCollection = function() {
 	return deferred.promise;
 };
 
+var saveCollection = function(marketData) {
+	return Promise.resolve()
+	.then(clearCollection)
+	.then(function() {return save(marketData)});
+};
+
 var getLast = function() {
 	var deferred = Promise.defer();
 
@@ -109,7 +115,7 @@ var wrapCommand = function(command) {
 
 module.exports = {
 	setConnectionString:setConnectionString,
-	save: wrapCommand(save),
+	save: wrapCommand(saveCollection),
 	clean: wrapCommand(clearCollection),
 	getLast: wrapCommand(getLast)
 };
