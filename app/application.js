@@ -72,21 +72,26 @@ var getSmallItems = function() {
 	return primalistConnector.fetch().then(filterSmallItems).then(logCount).then(parseData);
 };
 
-storeData = function(results) {
+var storeData = function(results) {
 	var now = Date.now();
 	console.log("Data updated at", now);
 	storedData.all = {
 		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
 		timestamp: now
 	};
-	storageConnector.save(storedData.all);
+	return storageConnector.save(storedData.all);
+};
+
+var handleResults = function(results) {
+	console.log("Update succeeded");
+	return parameters.SAVE_DATA ? Promise.resolve(results).then(storeData): results;
 };
 
 var updateData = function() {
 	Promise.resolve()
 	.then(sdeConnector.connect)
 	.then(getAllTypesLimited)
-	.then(storeData)
+	.then(handleResults)
 	.catch(tools.logError)
 	.then(sdeConnector.disconnect,sdeConnector.disconnect);
 };
