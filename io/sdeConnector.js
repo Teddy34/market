@@ -1,13 +1,23 @@
 var pg = require('pg');
 var _ = require('lodash');
 
-var parameters = require('../parameters');
+var client = null;
+var connectionString;
 
-var clientConnected = null;
+var setConnectionString = function(newConnectionString) {
+  connectionString = newConnectionString;
+};
 
-var connect = _.once(function() {
-  return clientConnected = new Promise(function(resolve, reject) {
-      pg.connect(parameters.sdeConnectionString, function(err, client, done) {
+var connect = function() {
+
+  if (!connectionString) {
+    return Promise.reject("no connection string");
+  }
+
+  client = new pg.Client(connectionString);
+
+  return new Promise(function(resolve, reject) {
+      client.connect(function(err) {
       if(err) {
         console.error('Error unable to connect to database:', err);
         reject(err);
@@ -18,29 +28,31 @@ var connect = _.once(function() {
       }
     });
   });
-});
+};
+
+var disconnect = function(value) {
+  client.end();
+  return value;
+};
 
 
-var sendQueryWhenReady = function(query) {
-  if (!clientConnected) {
-    return Promise.reject('Maybe you want to connect to the database first');
-  }
-
-  function sendQuery(client){
-    return new Promise(function(resolve, reject) {
-      client.query(query, function(err, rows, cols){
-        if(!err){
-          resolve(rows);
-        } else {
-          reject(err);
-        }
-      });
+var sendQuery = function(query) {
+  
+  return new Promise(function(resolve, reject) {
+    client.query(query, function(err, rows, cols){
+      if(!err){
+        resolve(rows);
+      } else {
+        reject(err);
+      }
     });
-  }
-  return clientConnected.then(sendQuery);
+  });
+
 };
 
 module.exports = {
-  connect: connect,
-  sendQueryWhenReady: sendQueryWhenReady
+  setConnectionString: setConnectionString.bind(this),
+  sendQuery: sendQuery.bind(this),
+  disconnect: disconnect.bind(this),
+  connect: connect.bind(this)
 };

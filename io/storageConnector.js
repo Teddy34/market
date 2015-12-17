@@ -68,6 +68,18 @@ var save = function(marketData) {
 	return deferred.promise;
 };
 
+var clearCollection = function() {
+	var deferred = Promise.defer();
+	MarketData.remove({}, function(err,data) {
+		if (err) {
+			deferred.reject(err);
+    	} else {
+    		deferred.resolve(data);
+    	}
+	});
+	return deferred.promise;
+};
+
 var getLast = function() {
 	var deferred = Promise.defer();
 
@@ -91,11 +103,13 @@ var wrapCommand = function(command) {
 		.then(function() {return returnValue = command(data);})
 		.then(disconnect)
 		.then(function() {return returnValue;})
+		.catch(function(err) {console.log('storageConnector issue'); return Promise.reject(err);});
 	}
 };
 
 module.exports = {
 	setConnectionString:setConnectionString,
 	save: wrapCommand(save),
+	clean: wrapCommand(clearCollection),
 	getLast: wrapCommand(getLast)
 };

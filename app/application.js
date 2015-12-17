@@ -6,6 +6,7 @@ var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
 var parameters = require('../parameters');
 var storageConnector = require('../io/storageConnector');
+var sdeConnector = require('../io/sdeConnector');
 
 function filterList(itemList) {
 	return _.filter(itemList, function(item) {
@@ -82,9 +83,12 @@ storeData = function(results) {
 };
 
 var updateData = function() {
-	getAllTypesLimited()
+	Promise.resolve()
+	.then(sdeConnector.connect)
+	.then(getAllTypesLimited)
 	.then(storeData)
-	.catch(tools.logError);
+	.catch(tools.logError)
+	.then(sdeConnector.disconnect,sdeConnector.disconnect);
 };
 
 var getLastData = function() {
@@ -92,7 +96,7 @@ var getLastData = function() {
 	.then(function() {return storageConnector.getLast();})
 	.catch(tools.logError)
 	.catch(function() {return storedData.all;});
-}
+};
 
 setInterval(updateData,parameters.appUpdateInterval);
 updateData();
