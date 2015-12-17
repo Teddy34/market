@@ -34,21 +34,11 @@ var getItemIdByName = function(name) {
 	.then(getRows);
 };
 
-var connect = function() {
-  return sdeConnector.connect();
-};
-
-var disconnect = function() {
-  return sdeConnector.disconnect();
-}
-
 function getRows(result) {
 	return result.rows;
 }
 
 module.exports = {
-  connect: connect,
-  disconnect: disconnect,
   getSystemIDFromSystemName: getSystemIDFromSystemName,
   getLocationsFromSystemID: getLocationsFromSystemID,
   getLocationsFromSystemName: getLocationsFromSystemName,

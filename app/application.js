@@ -84,7 +84,7 @@ var storeData = function(results) {
 
 var handleResults = function(results) {
 	console.log("Update succeeded");
-	return parameters.SAVE_DATA ? Promise.resolve(results).then(storeData): results;
+	return parameters.saveData ? Promise.resolve(results).then(storeData): results;
 };
 
 var updateData = function() {
