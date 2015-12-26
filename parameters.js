@@ -9,12 +9,13 @@ module.exports = {
   priceRecommandedMultiplier: process.env.PRICE_TRESHOLD_MULTIPLIER || 1.15,
   maxSmallItemSize: process.env.MAX_ITEM_SIZE || 200,
   minBigItemSize: process.env.MIN_BIG_ITEM_SIZE || 1000,
-  limiter: process.env.LIMITER || 200,
+  limiter: process.env.LIMITER || 1000,
   crestDelay: process.env.CREST_DELAY || 200,
   eveCentralApiUrl: process.env.EVECENTRAL_API_URL || 'http://api.eve-central.com/api/marketstat/json',
   eveCentralCacheDuration: process.env.EVECENTRAL_CACHE_DURATION || (60*60*1000),
   eveCentralChunk: process.env.EVECENTRAL_CHUNK || 200,
   eveCentralDelay: process.env.EVECENTRAL_DELAY || 400,
   filteredItemList: (process.env.FILTEREDITEMLIST || '36913').split(','),
-  appUrl: process.env.APP_URL || 'http://localhost:8080'
+  appUrl: process.env.APP_URL || 'http://localhost:8080',
+  saveData: process.env.SAVE_DATA || false
 };

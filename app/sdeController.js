@@ -15,22 +15,22 @@ var getSystemIDFromSystemName = function(systemName) {
     return resultList.shift().solarSystemID;
   }
 
-  return sdeConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName" FROM "mapSolarSystems" AS "s" WHERE "solarSystemName" = \''+systemName+'\'')
+  return sdeConnector.sendQuery('SELECT s."solarSystemID", s."solarSystemName" FROM "mapSolarSystems" AS "s" WHERE "solarSystemName" = \''+systemName+'\'')
   .then(getRows)
   .then(parse);
 };
 
 var getLocationsFromSystemID = function(systemID) {
-  return sdeConnector.sendQueryWhenReady('SELECT s."stationID" FROM "staStations" AS "s" WHERE "systemID" = \''+systemID+'\'');
+  return sdeConnector.sendQuery('SELECT s."stationID" FROM "staStations" AS "s" WHERE "systemID" = \''+systemID+'\'');
 };
 
 var getLocationsFromSystemName = function(systemName) {
-  return sdeConnector.sendQueryWhenReady('SELECT s."solarSystemID", s."solarSystemName", t."stationID", s."constellationID", s."regionID" FROM "staStations" AS "t" INNER JOIN "mapSolarSystems" s ON s."solarSystemID"=t."solarSystemID" WHERE "solarSystemName" = \''+systemName+'\'')
+  return sdeConnector.sendQuery('SELECT s."solarSystemID", s."solarSystemName", t."stationID", s."constellationID", s."regionID" FROM "staStations" AS "t" INNER JOIN "mapSolarSystems" s ON s."solarSystemID"=t."solarSystemID" WHERE "solarSystemName" = \''+systemName+'\'')
   .then(getRows);
 };
 
 var getItemIdByName = function(name) {
-	return sdeConnector.sendQueryWhenReady('SELECT "typeID" from "invTypes" WHERE "typeName" = \''+name+'\'')
+	return sdeConnector.sendQuery('SELECT "typeID" from "invTypes" WHERE "typeName" = \''+name+'\'')
 	.then(getRows);
 };
 
