@@ -112,7 +112,7 @@ var fetchRegionMarketUrlByName = function(strRegionName) {
   .then(getMarketSellOrdersEndPoint)
 };
 
-fetchRegionMarketUrlById = _.memoize(function(regionId) {
+var fetchRegionMarketUrlById = _.memoize(function(regionId) {
   return Promise.resolve()
   .then(getRegionList)
   .then(findRegionByIdPartial(regionId))
