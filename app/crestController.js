@@ -137,7 +137,6 @@ var getLocationsBySystemId = function(systemId) {
   return Promise.resolve()
   .then(getLocationList)
   .then(function(locationList) {
-    console.log("jordi:", locationList.items[0].solarSystem);
     return _.filter(locationList.items, {solarSystem:{id:systemId}});
   });
 };
