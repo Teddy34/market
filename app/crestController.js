@@ -71,6 +71,10 @@ function getMarketSellOrdersEndPoint(region) {
   return region.marketSellOrders;
 }
 
+function getLocationsEndPoint(listObject) {
+  return listObject.industry.facilities;
+}
+
 function getRefUrl (item) {
   if (! item || !item.href) {
     throw new Error("href not found");
@@ -104,6 +108,14 @@ var getRegionList = _.throttle(function() {
   .then(crestConnector.fetchList);
 },60*60*1000);
 
+
+var getLocationList = _.throttle(function() {
+  return Promise.resolve()
+  .then(getCrestEndPoint)
+  .then(getLocationsEndPoint)
+  .then(crestConnector.fetchPoint);
+},60*60*1000);
+
 var fetchRegionMarketUrlByName = function(strRegionName) {
   return Promise.resolve()
   .then(getRegionList)
@@ -119,6 +131,16 @@ fetchRegionMarketUrlById = _.memoize(function(regionId) {
   .then(crestConnector.fetchPoint)
   .then(getMarketSellOrdersEndPoint)
 });
+
+var getLocationsBySystemId = function(systemId) {
+
+  return Promise.resolve()
+  .then(getLocationList)
+  .then(function(locationList) {
+    console.log("jordi:", locationList.items[0].solarSystem);
+    return _.filter(locationList.items, {solarSystem:{id:systemId}});
+  });
+};
 
 var fetchItemTypeUrl = function(itemNumber) {
 
@@ -242,5 +264,6 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
 };
 
 module.exports = {
-  fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, crestCacheDuration, getfetchMarketSellByRegionIdAndTypeHash)
+  fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, crestCacheDuration, getfetchMarketSellByRegionIdAndTypeHash),
+  getLocationsBySystemId: getLocationsBySystemId
 };
