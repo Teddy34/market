@@ -4,7 +4,7 @@ module.exports = {
   storageConnectionString: process.env.STORAGE_CONNECTION_STRING || require('./storageCredentials'),
   crestEndPoint: process.env.CREST_END_POINT || 'https://public-crest.eveonline.com/',
   crestCacheDuration: process.env.CREST_CACHE_DURATION || (20*60*1000),
-  primalistURL: process.env.PRIMALIST_URL || 'http://flietmarket.herokuapp.com/api/',
+  primalistURL: process.env.PRIMALIST_URL || 'http://localhost:8080/api/',
   priceTresholdMultiplier: process.env.PRICE_TRESHOLD_MULTIPLIER || 1.18,
   priceRecommandedMultiplier: process.env.PRICE_TRESHOLD_MULTIPLIER || 1.15,
   maxSmallItemSize: process.env.MAX_ITEM_SIZE || 200,
@@ -16,5 +16,6 @@ module.exports = {
   eveCentralChunk: process.env.EVECENTRAL_CHUNK || 200,
   eveCentralDelay: process.env.EVECENTRAL_DELAY || 400,
   filteredItemList: (process.env.FILTEREDITEMLIST || '36913').split(','),
-  appUrl: process.env.APP_URL || 'http://localhost:8080'
+  appUrl: process.env.APP_URL || 'http://localhost:8080',
+  referenceSystemHub: process.env.APP_REFERENCE_SYSTEM_HUB || 'Jita'
 };

@@ -32,7 +32,7 @@ var getItemIdList = function(itemList) {
 var parseData = function(itemList) {
 	console.log('Analysing:',itemList.length, 'items');
 	var analyseMarket = function(typeIdList) {
-		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'Fliet');
+		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'I1Y-IU');
 	};
 
 	var splitData = function(itemList) {
@@ -84,7 +84,7 @@ storeData = function(results) {
 var updateData = function() {
 	getAllTypesLimited()
 	.then(storeData)
-	.catch(tools.logError);
+	.catch(function(error) {console.error("Could not update data:", error)});
 };
 
 var getLastData = function() {

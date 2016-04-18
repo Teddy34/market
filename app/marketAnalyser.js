@@ -53,7 +53,7 @@ var summariesParser = function(summaries) {
 };
 
 var getPriceReferenceFromSummary = function(itemId) {
-  return marketData.fetchMarketSummaryByTypeAndSystemName(itemId, 'Dodixie')
+  return marketData.fetchMarketSummaryByTypeAndSystemName(itemId, parameters.referenceSystemHub)
   .then(summariesParser);
 };
 
