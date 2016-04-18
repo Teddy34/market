@@ -3,22 +3,22 @@ var connectionPromise;
 
 var marketDataSchema = mongoose.Schema({
     data: [{
-		typeID:Number,
-		typeName:String,
-		groupID:Number,
-		volume:Number,
-		marketGroupID:Number,
-		quantity:Number,
-		mean:Number,
-		weightedMean:Number,
-		minSell:Number,
-		buyMax:Number,
-		typeId:Number,
-		volumeAvailable:Number,
-		reasonablePrice:Number,
-		hubData:{  
-			mean:Number
-		}
+			typeID:Number,
+			typeName:String,
+			groupID:Number,
+			volume:Number,
+			marketGroupID:Number,
+			quantity:Number,
+			mean:Number,
+			weightedMean:Number,
+			minSell:Number,
+			buyMax:Number,
+			typeId:Number,
+			volumeAvailable:Number,
+			reasonablePrice:Number,
+			hubData:{  
+				mean:Number
+			}
     }],
     timestamp: Date
 });
@@ -68,6 +68,24 @@ var save = function(marketData) {
 	return deferred.promise;
 };
 
+var clearCollection = function() {
+	var deferred = Promise.defer();
+	MarketData.remove({}, function(err,data) {
+		if (err) {
+			deferred.reject(err);
+    	} else {
+    		deferred.resolve(data);
+    	}
+	});
+	return deferred.promise;
+};
+
+var saveCollection = function(marketData) {
+	return Promise.resolve()
+	.then(clearCollection)
+	.then(function() {return save(marketData)});
+};
+
 var getLast = function() {
 	var deferred = Promise.defer();
 
@@ -91,11 +109,13 @@ var wrapCommand = function(command) {
 		.then(function() {return returnValue = command(data);})
 		.then(disconnect)
 		.then(function() {return returnValue;})
+		.catch(function(err) {console.log('storageConnector issue'); return Promise.reject(err);});
 	}
 };
 
 module.exports = {
 	setConnectionString:setConnectionString,
-	save: wrapCommand(save),
+	save: wrapCommand(saveCollection),
+	clean: wrapCommand(clearCollection),
 	getLast: wrapCommand(getLast)
 };

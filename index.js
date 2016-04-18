@@ -17,9 +17,9 @@ var storageConnector = require('./io/storageConnector');
 .then(logCount)
 .catch(logError);*/
 
-function connectSDE() {
-  console.info("SDE connecting");
-  return sdeConnector.connect();
+function initSDE() {
+  console.info("SDE starting");
+  return sdeConnector.setConnectionString(parameters.sdeConnectionString);
 }
 
 function startWebServer() {
@@ -64,7 +64,7 @@ function logError(error) {
 // startup workflow
 Promise.resolve()
   .then(logServiceStarting)
-  .then(connectSDE)
+  .then(initSDE)
   .then(logSDEStarted)
   .then(initStorage)
   .then(logStorageStarted)

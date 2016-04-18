@@ -6,6 +6,7 @@ var primalistConnector = require('../io/primalistConnector');
 var tools = require('../tools');
 var parameters = require('../parameters');
 var storageConnector = require('../io/storageConnector');
+var sdeConnector = require('../io/sdeConnector');
 
 function filterList(itemList) {
 	return _.filter(itemList, function(item) {
@@ -71,20 +72,28 @@ var getSmallItems = function() {
 	return primalistConnector.fetch().then(filterSmallItems).then(logCount).then(parseData);
 };
 
-storeData = function(results) {
+var storeData = function(results) {
 	var now = Date.now();
 	console.log("Data updated at", now);
 	storedData.all = {
 		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
 		timestamp: now
 	};
-	storageConnector.save(storedData.all);
+	return storageConnector.save(storedData.all);
+};
+
+var handleResults = function(results) {
+	console.log("Update succeeded");
+	return parameters.saveData ? Promise.resolve(results).then(storeData): results;
 };
 
 var updateData = function() {
-	getAllTypesLimited()
-	.then(storeData)
-	.catch(function(error) {console.error("Could not update data:", error)});
+	Promise.resolve()
+	.then(sdeConnector.connect)
+	.then(getAllTypesLimited)
+	.then(handleResults)
+	.catch(tools.logError)
+	.then(sdeConnector.disconnect,sdeConnector.disconnect);
 };
 
 var getLastData = function() {
@@ -92,7 +101,7 @@ var getLastData = function() {
 	.then(function() {return storageConnector.getLast();})
 	.catch(tools.logError)
 	.catch(function() {return storedData.all;});
-}
+};
 
 setInterval(updateData,parameters.appUpdateInterval);
 updateData();
