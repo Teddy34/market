@@ -25,7 +25,7 @@ function connectSDE() {
 function startWebServer() {
   console.info("WebServer starting" );
   var test = require('./server/server');
-  return require('./server/server').start(process.env.PORT || 8080);
+  return require('./server/server').start(process.env.PORT || 8081);
 }
 
 function initStorage() {
