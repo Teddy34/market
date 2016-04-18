@@ -7,7 +7,7 @@ var sde = require('./sdeController');
 var eveCentral = require('./eveCentralController');
 
 var getStationIDList = function(systemList) {
-  return _.pluck(systemList, 'stationID');
+  return _(systemList).pluck('facilityID').map(String);
 };
 
 var filterBySystem = function(results) {
@@ -23,12 +23,23 @@ var filterBySystem = function(results) {
 
 var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   var getMarketSellOrders = function(systemDataList) {
-    return Promise.all([crest.fetchMarketSellByRegionIdAndType(systemDataList[0].regionID, typeId),
+    return Promise.all([crest.fetchMarketSellByRegionIdAndType(_.head(systemDataList).region.id, typeId),
                         getStationIDList(systemDataList)])
     .then(filterBySystem);
   };
 
-  return sde.getLocationsFromSystemName(systemName)
+  function checkLocationListNotEmpty(locationList) {
+    if (!locationList || !locationList.length) {
+      throw new Error('No station or outpost in ',systemName);
+    }
+    return locationList;
+  }
+
+
+  return Promise.resolve(systemName)
+  .then(sde.getSystemIDFromSystemName)
+  .then(crest.getLocationsBySystemId)
+  .then(checkLocationListNotEmpty)
   .then(getMarketSellOrders);
 };
 

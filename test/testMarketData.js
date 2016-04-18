@@ -8,7 +8,7 @@ var makeSummaryTest = function() {
 };
 
 var fetchMarketSellByTypeAndSystemName = function() {
-  return marketData.fetchMarketSellByTypeAndSystemName(448, 'Fliet').then(tools.logResult)
+  return marketData.fetchMarketSellByTypeAndSystemName(594, 'I1Y-IU').then(tools.logResult)
   .catch(function(err) {console.log(err);});
 }
 
