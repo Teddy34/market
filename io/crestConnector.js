@@ -76,13 +76,18 @@ var fetchPoint = function(element) {
     console.log("retrying ",url);
     return retry(error, url);
   };
+
+  var logMultipleErrors = function(error) {
+    console.log("Multiple fails for ",url)
+    return Promise.reject(error);
+  }
   
   //console.log("fetching ",url );
   return fetch(url,options)
   .then(checkSuccess)
   .then(fromJSON)
-  .catch(tools.logError)
-  .catch(retryPartial);
+  .catch(retryPartial)
+  .catch(logMultipleErrors);
 };
 
 function fetchList(queryResult) {
