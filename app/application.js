@@ -79,12 +79,19 @@ var storeData = function(results) {
 		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
 		timestamp: now
 	};
-	return storageConnector.save(storedData.all);
+	return storedData;
+};
+
+var saveData = function(storedData) {
+	storageConnector.save(storedData.all);
+	return storedData;
 };
 
 var handleResults = function(results) {
 	console.log("Update succeeded");
-	return parameters.saveData ? Promise.resolve(results).then(storeData): results;
+	return Promise.resolve(results)
+	.then(storeData)
+	.then(function(storedData) {return parameters.useExternalStorage ?  Promise.resolve(results).then(useExternalStorage) : storedData;});
 };
 
 var updateData = function() {
@@ -97,10 +104,15 @@ var updateData = function() {
 };
 
 var getLastData = function() {
-	return Promise.resolve()
-	.then(function() {return storageConnector.getLast();})
-	.catch(tools.logError)
-	.catch(function() {return storedData.all;});
+
+	if (parameters.useExternalStorage) {
+	  return Promise.resolve()
+	  .then(function() {return storageConnector.getLast();})
+	  .catch(tools.logError)
+	  .catch(function() {return storedData.all;});
+	}
+	return Promise.resolve(storedData.all);
+
 };
 
 setInterval(updateData,parameters.appUpdateInterval);

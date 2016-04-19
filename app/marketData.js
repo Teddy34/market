@@ -22,6 +22,11 @@ var filterBySystem = function(results) {
 };
 
 var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
+
+  if (!typeId || !systemName) {
+    throw new Error("fetchMarketSellByTypeAndSystemName invalid input typeId:", typeId, " systemName:", systemName);
+  }
+
   var getMarketSellOrders = function(systemDataList) {
     return Promise.all([crest.fetchMarketSellByRegionIdAndType(_.head(systemDataList).region.id, typeId),
                         getStationIDList(systemDataList)])

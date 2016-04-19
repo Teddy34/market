@@ -151,6 +151,7 @@ var fetchItemTypeUrl = function(itemNumber) {
   .then(fetchItemList)
   .then(find)
   .then(getRefUrl)
+  .catch(function(error) {console.error('crest controller error: fetchItemTypeUrl:'+itemNumber); return Promise.reject(error)});
 };
 
 var searchSystemInSystemList = function(name, systemList) {
@@ -251,7 +252,8 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   };
 
   var fetchRegionMarketUrlByIdPartial = function() {
-    return fetchRegionMarketUrlById(regionId).then(getRefUrl);
+    return fetchRegionMarketUrlById(regionId)
+    .then(getRefUrl);
   };
 
   return Promise.resolve(type)
@@ -259,7 +261,8 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
   .then(storeTypeURL)
   .then(fetchRegionMarketUrlByIdPartial)
   .then(addParameterToRegionMarketURL)
-  .then(crestConnector.fetchPoint);
+  .then(crestConnector.fetchPoint)
+  .catch(function(error) {console.error('crest controller error: fetchMarketSellByRegionIdAndType region:'+regionId, ' type:', type); return Promise.reject(error)});
 };
 
 module.exports = {

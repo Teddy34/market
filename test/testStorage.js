@@ -25,10 +25,12 @@ var dataMock = {
    timestamp:1447591362344
 };
 
-storageConnector.connect(storageConnectionString)
-.then(function() {console.log('connected');})
+storageConnector.setConnectionString(storageConnectionString);
+Promise.resolve()
 //.then(function() {return storageConnector.save(dataMock);})
+.then(function() {return tools.setTimeoutPromised(300);})
 .then(function() {return storageConnector.getLast();})
 .then(function(result) {console.log('result'); return result;})
 .then(tools.logResult)
-.catch(tools.logError);
+.catch(tools.logError)
+.then(storageConnector.disconnect, storageConnector.disconnect);
