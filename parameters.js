@@ -2,7 +2,7 @@ module.exports = {
   appUpdateInterval: process.env.APP_UPDATE_INTERVAL || (20*60*1000),
   sdeConnectionString: process.env.DB_CONNECTION_STRING || require('./sdeCredentials'),
   storageConnectionString: process.env.STORAGE_CONNECTION_STRING || require('./storageCredentials'),
-  crestEndPoint: process.env.CREST_END_POINT || 'https://public-crest.eveonline.com/',
+  crestEndPoint: process.env.CREST_END_POINT || 'https://crest-tq.eveonline.com/',
   crestCacheDuration: process.env.CREST_CACHE_DURATION || (20*60*1000),
   primalistURL: process.env.PRIMALIST_URL || 'http://localhost:8080/api/',
   priceTresholdMultiplier: process.env.PRICE_TRESHOLD_MULTIPLIER || 1.25,
