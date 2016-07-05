@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var moment = require('moment');
 
 var template = require('./appTemplate');
 var marketAnalyser = require('./marketAnalyser');
@@ -120,8 +121,9 @@ updateData();
 
 // templating
 
-var getRenderedTemplate = function(data) {
-	return template({items:data, appUrl:parameters.appUrl});
+var getRenderedTemplate = function(result) {
+	var time = moment(result.timestamp).format('MMMM Do YYYY, h:mm:ss a');
+	return template({items:result.data, appUrl:parameters.appUrl, timestamp:time});
 };
 
 // exposed primitives to get results
@@ -133,7 +135,7 @@ var serveAPI = function () {
 var serveHTML = function () {
 	return Promise.resolve()
 	.then(getLastData)
-	.then(function(result) {return result.data;})
+	//.then(function(result) {return result.data;})
 	.then(getRenderedTemplate)
 	.catch(function() {return "no data available";});
 };

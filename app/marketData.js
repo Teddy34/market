@@ -22,7 +22,6 @@ var filterBySystem = function(results) {
 };
 
 var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
-
   if (!typeId || !systemName) {
     throw new Error("fetchMarketSellByTypeAndSystemName invalid input typeId:", typeId, " systemName:", systemName);
   }
