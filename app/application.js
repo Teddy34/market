@@ -33,7 +33,7 @@ var getItemIdList = function(itemList) {
 var parseData = function(itemList) {
 	console.log('Analysing:',itemList.length, 'items');
 	var analyseMarket = function(typeIdList) {
-		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, 'I1Y-IU');
+		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, parameters.targetSystem);
 	};
 
 	var splitData = function(itemList) {
