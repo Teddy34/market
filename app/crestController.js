@@ -137,7 +137,7 @@ var getLocationsBySystemId = function(systemId) {
   return Promise.resolve()
   .then(getLocationList)
   .then(function(locationList) {
-    return _.filter(locationList.items, {solarSystem:{id_str:systemId}});
+    return _.filter(locationList.items, {solarSystem:{id:systemId}});
   });
 };
 
@@ -267,5 +267,5 @@ var fetchMarketSellByRegionIdAndType = function(regionId, type) {
 
 module.exports = {
   fetchMarketSellByRegionIdAndType: tools.cacheFunction(fetchMarketSellByRegionIdAndType, crestCacheDuration, getfetchMarketSellByRegionIdAndTypeHash),
-  getLocationsBySystemId: getLocationsBySystemId
+  getLocationsBySystemId: _.memoize(getLocationsBySystemId)
 };
