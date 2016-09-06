@@ -1,5 +1,6 @@
 var express = require('express');
 var _ = require('lodash');
+var cors = require('cors');
 
 var application = require('../app/application');
 var THROTTLE_DURATION = 5 * 60 * 1000;
@@ -26,6 +27,7 @@ var getHTMLMiddleware = function(serveFunc) {
 var initServer = function(input) {
   // create the webserver
   webServer = express();
+  webServer.use(cors());
   webServer.get('/api/', function(req,res) {
     Promise.resolve()
     .then(serveAPI)
