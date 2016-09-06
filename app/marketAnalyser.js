@@ -65,7 +65,6 @@ var decoratorMethodTwo = function(item) {
 };
 
 var getReferencePriceListAndSellOrderList = function(typeIdList, systemName) {
-
   var getMultipleSellOrders = function(itemId) {
     return marketData.fetchMarketSellByTypeAndSystemName(itemId, systemName)
   };

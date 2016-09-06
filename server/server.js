@@ -8,8 +8,6 @@ var webServer;
 
 var serveAPI = application.serveAPI,THROTTLE_DURATION;
 var serveHTML = application.serveHTML,THROTTLE_DURATION;
-var serveShipsHTML = _.throttle(application.serveShipsHTML,THROTTLE_DURATION);
-var serveSmallItemsHTML = _.throttle(application.serveSmallItemsHTML,THROTTLE_DURATION);
 
 var getHTMLMiddleware = function(serveFunc) {
   return function(req,res) {
@@ -28,7 +26,7 @@ var getHTMLMiddleware = function(serveFunc) {
 var initServer = function(input) {
   // create the webserver
   webServer = express();
-  webServer.use('/api/', function(req,res) {
+  webServer.get('/api/', function(req,res) {
     Promise.resolve()
     .then(serveAPI)
     .then(function(response) {
@@ -38,9 +36,7 @@ var initServer = function(input) {
       res.send({error:error});
     });
   });
-  webServer.use('/ships/', getHTMLMiddleware(serveShipsHTML));
-  webServer.use('/small', getHTMLMiddleware(serveSmallItemsHTML));
-  webServer.use('/', getHTMLMiddleware(serveHTML));
+  webServer.get('/', getHTMLMiddleware(serveHTML));
   return input;
 };
 

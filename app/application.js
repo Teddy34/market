@@ -1,13 +1,15 @@
-var _ = require('lodash');
-var moment = require('moment');
+'use strict';
 
-var template = require('./appTemplate');
-var marketAnalyser = require('./marketAnalyser');
-var primalistConnector = require('../io/primalistConnector');
-var tools = require('../tools');
-var parameters = require('../parameters');
-var storageConnector = require('../io/storageConnector');
-var sdeConnector = require('../io/sdeConnector');
+const _ = require('lodash');
+const moment = require('moment');
+
+const template = require('./appTemplate');
+const marketAnalyser = require('./marketAnalyser');
+const primalistConnector = require('../io/primalistConnector');
+const tools = require('../tools');
+const parameters = require('../parameters');
+const storageConnector = require('../io/storageConnector');
+const sdeConnector = require('../io/sdeConnector');
 
 function filterList(itemList) {
 	return _.filter(itemList, function(item) {
@@ -16,33 +18,29 @@ function filterList(itemList) {
 }
 
 // stored result from different calls
-var storedData = {
-	all: null,
-	small: null,
-	ships: null
-};
+let storedData;
 
 function logCount(list) {
 	console.log(list.length, 'items');
 	return list;
 }
 
-var getItemIdList = function(itemList) {
-	return _.pluck(itemList, 'typeID');
+const getItemIdList = function(itemList) {
+	return _.map(itemList, 'typeID');
 };
 
-var parseData = function(itemList) {
+const parseData = function(itemList) {
 	console.log('Analysing:',itemList.length, 'items');
-	var analyseMarket = function(typeIdList) {
+	const analyseMarket = function(typeIdList) {
 		return marketAnalyser.getAnalysedItemListBySystemName(typeIdList, parameters.targetSystem);
 	};
 
-	var splitData = function(itemList) {
+	const splitData = function(itemList) {
 		var marketPromise = Promise.resolve(itemList).then(getItemIdList).then(analyseMarket);
 		return Promise.all([itemList, marketPromise]);
 	};
 
-	var mergeData = function(resultList) {
+	const mergeData = function(resultList) {
 		return _(resultList[0]).zip(resultList[1]).map(tools.mergeToOneObject).value();
 	};
 
@@ -51,51 +49,37 @@ var parseData = function(itemList) {
 
 // different dashboards
 
-var getAllTypesLimited = function() {
-	var take = function(itemList) {
+const getAllTypesLimited = function() {
+	const take = function(itemList) {
 		return _.take(itemList,parameters.limiter);
 	};
 
 	return primalistConnector.fetch().then(filterList).then(take).then(parseData);
 };
 
-var getShips = function() {
-	var filterShips = function(itemList) {
-		return _.filter(itemList, function(item) {return item.volume > parameters.minBigItemSize;});
-	};
-	return primalistConnector.fetch().then(filterShips).then(parseData);
-};
-
-var getSmallItems = function() {
-	var filterSmallItems = function(itemList) {
-		return _.filter(itemList, function(item) {return item.volume <= parameters.maxSmallItemSize;});
-	};
-	return primalistConnector.fetch().then(filterSmallItems).then(logCount).then(parseData);
-};
-
-var storeData = function(results) {
-	var now = Date.now();
+const storeData = function(results) {
+	const now = Date.now();
 	console.log("Data updated at", now);
-	storedData.all = {
+	storedData = {
 		data: _.sortBy(results, function(item) {return 100000*(0-item.volume)+item.groupID;}),
 		timestamp: now
 	};
 	return storedData;
 };
 
-var saveData = function(storedData) {
-	storageConnector.save(storedData.all);
+const useExternalStorage = function(storedData) {
+	storageConnector.save(storedData);
 	return storedData;
 };
 
-var handleResults = function(results) {
+const handleResults = function(results) {
 	console.log("Update succeeded");
 	return Promise.resolve(results)
 	.then(storeData)
-	.then(function(storedData) {return parameters.useExternalStorage ?  Promise.resolve(results).then(useExternalStorage) : storedData;});
+	.then(function(storedData) {return parameters.useExternalStorage ?  Promise.resolve(storedData).then(useExternalStorage) : storedData;});
 };
 
-var updateData = function() {
+const updateData = function() {
 	Promise.resolve()
 	.then(sdeConnector.connect)
 	.then(getAllTypesLimited)
@@ -104,15 +88,15 @@ var updateData = function() {
 	.then(sdeConnector.disconnect,sdeConnector.disconnect);
 };
 
-var getLastData = function() {
+const getLastData = function() {
 
 	if (parameters.useExternalStorage) {
 	  return Promise.resolve()
-	  .then(function() {return storageConnector.getLast();})
+	  .then(() => storageConnector.getLast())
 	  .catch(tools.logError)
-	  .catch(function() {return storedData.all;});
+	  .catch(() => storedData);
 	}
-	return Promise.resolve(storedData.all);
+	return Promise.resolve(storedData);
 
 };
 
@@ -121,18 +105,18 @@ updateData();
 
 // templating
 
-var getRenderedTemplate = function(result) {
+const getRenderedTemplate = function(result) {
 	var time = moment(result.timestamp).format('MMMM Do YYYY, h:mm:ss a');
 	return template({items:result.data, appUrl:parameters.appUrl, timestamp:time});
 };
 
 // exposed primitives to get results
 
-var serveAPI = function () {
+const serveAPI = function () {
 	return getLastData();
 };
 
-var serveHTML = function () {
+const serveHTML = function () {
 	return Promise.resolve()
 	.then(getLastData)
 	//.then(function(result) {return result.data;})
@@ -140,21 +124,7 @@ var serveHTML = function () {
 	.catch(function() {return "no data available";});
 };
 
-var serveShipsHTML = function() {
-	return getShips()
-	.then(getRenderedTemplate)
-	.catch(tools.logError);
-};
-
-var serveSmallItemsHTML = function() {
-	return getSmallItems()
-	.then(getRenderedTemplate)
-	.catch(tools.logError);
-};
-
 module.exports = {
 	serveAPI: serveAPI,
-	serveHTML: serveHTML,
-	serveShipsHTML: serveShipsHTML,
-	serveSmallItemsHTML: serveSmallItemsHTML
+	serveHTML: serveHTML
 };

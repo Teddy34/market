@@ -17,7 +17,7 @@ module.exports = {
   eveCentralDelay: process.env.EVECENTRAL_DELAY || 400,
   filteredItemList: (process.env.FILTEREDITEMLIST || '36913').split(','),
   appUrl: process.env.APP_URL || 'http://localhost:8080',
-  saveData: process.env.SAVE_DATA || false,
+  useExternalStorage: process.env.SAVE_DATA || false,
   referenceSystemHub: process.env.APP_REFERENCE_SYSTEM_HUB || 'Jita',
   targetSystem: process.env.APP_TARGET_SYSTEM || 'DO6H-Q'
 };

@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+mongoose.Promise = Promise;
 var connectionPromise;
 
 var marketDataSchema = mongoose.Schema({
@@ -83,7 +84,8 @@ var clearCollection = function() {
 var saveCollection = function(marketData) {
 	return Promise.resolve()
 	.then(clearCollection)
-	.then(function() {return save(marketData)});
+	.then(() => save(marketData))
+	.catch((err) => {console.log(err); throw err;})
 };
 
 var getLast = function() {

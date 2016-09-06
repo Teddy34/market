@@ -7,7 +7,7 @@ var sde = require('./sdeController');
 var eveCentral = require('./eveCentralController');
 
 var getStationIDList = function(systemList) {
-  return _(systemList).pluck('facilityID').map(String);
+  return _(systemList).map('facilityID').map(String);
 };
 
 var filterBySystem = function(results) {
