@@ -15,6 +15,7 @@ module.exports = function get(urls) {
   };
 
   var doFetch = function(url, options) {
+    console.log(url);
     return fetch(url, options).then(getJSON);
   };
 

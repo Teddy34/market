@@ -21,10 +21,11 @@ var getSystemIDFromSystemName = function(systemName) {
 };
 
 var getLocationsFromSystemID = function(systemID) {
-  return sdeConnector.sendQuery('SELECT s."stationID" FROM "staStations" AS "s" WHERE "systemID" = \''+systemID+'\'');
+  return sdeConnector.sendQuery('SELECT s."solarSystemID" FROM "staStations" AS "s" WHERE "solarSystemID" = \''+systemID+'\'');
 };
 
 var getLocationsFromSystemName = function(systemName) {
+  console.log('getLocationsFromSystemName', systemName);
   return sdeConnector.sendQuery('SELECT s."solarSystemID", s."solarSystemName", t."stationID", s."constellationID", s."regionID" FROM "staStations" AS "t" INNER JOIN "mapSolarSystems" s ON s."solarSystemID"=t."solarSystemID" WHERE "solarSystemName" = \''+systemName+'\'')
   .then(getRows);
 };

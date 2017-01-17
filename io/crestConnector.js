@@ -68,6 +68,8 @@ var fetchPoint = function(element) {
     throw new Error("Wrong element to fetch:"+element.toSring());
   }
 
+  console.log(url)
+
   var now = Date.now();
   //console.log("time since last request:", now - lastRequest, "fetching:", url );
   lastRequest = now;

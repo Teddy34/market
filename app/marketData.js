@@ -7,6 +7,7 @@ var sde = require('./sdeController');
 var eveCentral = require('./eveCentralController');
 
 var getStationIDList = function(systemList) {
+  console.log(systemList);
   return _(systemList).map('facilityID').map(String);
 };
 
@@ -27,12 +28,14 @@ var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   }
 
   var getMarketSellOrders = function(systemDataList) {
-    return Promise.all([crest.fetchMarketSellByRegionIdAndType(_.head(systemDataList).region.id, typeId),
-                        getStationIDList(systemDataList)])
+    console.log(typeId, systemName);
+    return Promise.all([crest.fetchMarketSellByRegionIdAndType('10000046', typeId),
+                        systemDataList])
     .then(filterBySystem);
   };
 
   function checkLocationListNotEmpty(locationList) {
+    console.log(locationList);
     if (!locationList || !locationList.length) {
       throw new Error('No station or outpost in ',systemName);
     }
@@ -40,10 +43,7 @@ var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   }
 
 
-  return Promise.resolve(systemName)
-  .then(sde.getSystemIDFromSystemName)
-  .then(crest.getLocationsBySystemId)
-  .then(checkLocationListNotEmpty)
+  return Promise.resolve(['61000990'])
   .then(getMarketSellOrders);
 };
 

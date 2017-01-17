@@ -9,7 +9,7 @@ var setConnectionString = function(newConnectionString) {
 };
 
 var connect = function() {
-
+console.log('connecting');
   if (!connectionString) {
     return Promise.reject("no connection string");
   }
@@ -18,6 +18,7 @@ var connect = function() {
 
   return new Promise(function(resolve, reject) {
       client.connect(function(err) {
+        console.log('pouet')
       if(err) {
         console.error('Error unable to connect to database:', err);
         reject(err);
@@ -31,6 +32,7 @@ var connect = function() {
 };
 
 var disconnect = function(value) {
+  console.log('disconnecting');
   client.end();
   return value;
 };
