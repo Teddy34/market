@@ -7,7 +7,6 @@ var sde = require('./sdeController');
 var eveCentral = require('./eveCentralController');
 
 var getStationIDList = function(systemList) {
-  console.log(systemList);
   return _(systemList).map('facilityID').map(String);
 };
 
@@ -28,8 +27,7 @@ var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   }
 
   var getMarketSellOrders = function(systemDataList) {
-    console.log(typeId, systemName);
-    return Promise.all([crest.fetchMarketSellByRegionIdAndType('10000046', typeId),
+    return Promise.all([crest.fetchMarketSellByRegionIdAndType('10000051', typeId),
                         systemDataList])
     .then(filterBySystem);
   };
@@ -43,7 +41,7 @@ var fetchMarketSellByTypeAndSystemName = function(typeId, systemName) {
   }
 
 
-  return Promise.resolve(['61000990'])
+  return Promise.resolve(['60014922'])
   .then(getMarketSellOrders);
 };
 

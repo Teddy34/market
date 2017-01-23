@@ -19,5 +19,5 @@ module.exports = {
   appUrl: process.env.APP_URL || 'http://localhost:8080',
   useExternalStorage: process.env.SAVE_DATA || false,
   referenceSystemHub: process.env.APP_REFERENCE_SYSTEM_HUB || 'Jita',
-  targetSystem: process.env.APP_TARGET_SYSTEM || 'DO6H-Q'
+  targetSystem: process.env.APP_TARGET_SYSTEM || '9-4RP2'
 };
