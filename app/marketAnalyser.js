@@ -15,7 +15,6 @@ function roundXDigits(number, digits) {
 // decorators;
 var mergeThreeLists = function (lists) {
   var idList = _.map(lists[2], function(id) {return {typeId:id};});
-  console.log(lists[1]);
   var orderListInObject = _.map(lists[1], function(orderList) {return {orders:orderList};});
   // ideally we would want to have a merger of any number of list
   return _(lists[0]).zip(orderListInObject,idList).map(tools.mergeToOneObject).value();
@@ -72,8 +71,6 @@ var getReferencePriceListAndSellOrderList = function(typeIdList, systemName) {
 
   var priceRefenceList = getPriceReferenceFromSummary(typeIdList);
   var systemSellOrders = Promise.all(_.map(typeIdList, getMultipleSellOrders));
-
-  console.log(priceRefenceList);
 
   return Promise.all([priceRefenceList, systemSellOrders, typeIdList])
   .then(mergeThreeLists)

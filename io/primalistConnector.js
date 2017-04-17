@@ -19,6 +19,6 @@ function logCount(itemList) {
 }
 
 module.exports = {
-	fetch: () => Promise.resolve(result.slice(2490))
+	fetch: () => Promise.resolve(result)
 	//fetch: function() {return Promise.resolve(primalistURL).then(logRequest).then(fetch).then(fromJSON)}
 };

@@ -44,15 +44,16 @@ var doFetch = function(data) {
   return fetch(url,options)
   .then(checkSuccess)
   .then(fromJSON)
-  //.catch(_.partial(rechunkIfFailed, data))
+  .catch(_.partial(rechunkIfFailed, data))
 };
 
 var rechunkIfFailed = function(data) {
-  return Promise.reject();
-  if (data.size === 1) {
+  console.log('rechunking', data.typeId.length);
+  if (data.typeId.length === 1) {
+    console.log('excluding', data.typeId[0]);
     return null;
   }
-  return 1;
+  return throttledDoFetch(Math.ceil(data.typeId.length/2))(data);
 };
 
 var chunkRequest = function(data, chunkSize) {
@@ -65,17 +66,16 @@ var chunkRequest = function(data, chunkSize) {
     return _.flatten(chunkedResults,true);
   };
 
-  console.log('data', data.typeId);
-
   return Promise.all(_(data.typeId).chunk(chunkSize).map(fetchChunk).value())
-  .then(flattener);
+  .then(flattener)
+  .then(_.filter)
 };
 
-var throttledDoFetch = tools.promisedThrottle(
-  _.partialRight(chunkRequest, parameters.eveCentralChunk),
+var throttledDoFetch = (chunkSize) => tools.promisedThrottle(
+  _.partialRight(chunkRequest, chunkSize),
    parameters.crestDelay
 );
 
 module.exports = {
-  fetch: throttledDoFetch
+  fetch: throttledDoFetch(parameters.eveCentralChunk)
 };

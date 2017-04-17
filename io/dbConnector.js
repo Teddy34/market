@@ -33,7 +33,6 @@ var sendQueryWhenReady = function(query) {
       });
     });
   }
-  console.log(query);
   return clientConnected.then(sendQuery);
 };
 
