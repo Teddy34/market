@@ -13,6 +13,7 @@ const sdeConnector = require('../io/sdeConnector');
 
 function filterList(itemList) {
 	return _.filter(itemList, function(item) {
+		console.log(item.typeID, item.typeName, item.groupID, parameters.filteredItemList.indexOf(""+ item.typeID));
 		return (parameters.filteredItemList.indexOf(""+ item.typeID) === -1);
 	});
 }

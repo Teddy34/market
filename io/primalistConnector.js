@@ -1,5 +1,7 @@
 var fetch = require('node-fetch');
 var primalistURL = require('../parameters').primalistURL;
+var result = require('../zkillboarddata.json');
+var _ = require('lodash/fp');
 
 
 function fromJSON(response) {
@@ -17,5 +19,6 @@ function logCount(itemList) {
 }
 
 module.exports = {
-	fetch: function() {return Promise.resolve(primalistURL).then(logRequest).then(fetch).then(fromJSON)}
+	fetch: () => Promise.resolve(result.slice(2490))
+	//fetch: function() {return Promise.resolve(primalistURL).then(logRequest).then(fetch).then(fromJSON)}
 };
